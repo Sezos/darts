@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:moon_design/moon_design.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class GameScreen extends ConsumerStatefulWidget {
   const GameScreen(this.game, {super.key});
@@ -49,9 +50,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
-      // DeviceOrientation.landscapeLeft,
-      // DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
     ]);
+
+    WakelockPlus.enable();
 
     click.setUrl("asset:assets/sounds/click.wav");
     win.setUrl("asset:assets/sounds/win.wav");
@@ -70,6 +73,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       DeviceOrientation.portraitUp,
     ]);
 
+    WakelockPlus.disable();
+
     win.dispose();
     click.dispose();
 
@@ -85,13 +90,15 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final isPortrait = orientation == Orientation.portrait;
 
     return Scaffold(
-      appBar: AppBar(
-        title: BSubtitle(
-          "${game.startFrom} - ${formatDate(game.date)}",
-          fontWeight: .w900,
-        ),
-        centerTitle: false,
-      ),
+      appBar: isPortrait
+          ? AppBar(
+              title: BSubtitle(
+                "${game.startFrom} - ${formatDate(game.date)}",
+                fontWeight: .w900,
+              ),
+              centerTitle: false,
+            )
+          : null,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: isPortrait ? portrait() : landscape(),
@@ -185,8 +192,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     );
   }
 
-  void onTapNumber(int number) async {
+  void onTapNumber(int number, [DartType? thrownDartType]) async {
     HapticFeedback.mediumImpact();
+    final type = thrownDartType ?? dartType;
+
     click
         .seek(Duration.zero)
         .then(
@@ -213,7 +222,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       return;
     }
 
-    final int mult = dartType.getNumber();
+    final int mult = type.getNumber();
     final int dartScore = number * mult;
 
     if (currentRound.dart1 == null) {
@@ -614,6 +623,320 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   Widget landscape() {
-    return Container();
+    double safeWidth =
+        MediaQuery.of(context).size.width -
+        (MediaQuery.of(context).viewPadding.left +
+            MediaQuery.of(context).viewPadding.right);
+    double safeHeight =
+        MediaQuery.of(context).size.height -
+        MediaQuery.of(context).padding.top -
+        MediaQuery.of(context).padding.bottom;
+    double numbersHeight = safeHeight - 80 - 30;
+    double numbersWidth = safeWidth - 80 - 75 - 32;
+
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: Column(
+        children: [
+          SizedBox(
+            height: 80,
+            child: Row(
+              // spacing: 8,
+              children: [
+                ...game.users.map(
+                  (player) {
+                    bool curr = game.users.indexOf(player) == currentUserIndex;
+                    var userPoint = getUserPoint(player);
+                    final ppr =
+                        (game.rounds.where((e) => e.user == player).isEmpty
+                                ? 0
+                                : game.rounds
+                                          .where((e) => e.user == player)
+                                          .fold(
+                                            0,
+                                            (value, e) =>
+                                                value +
+                                                (e.dart1 ?? 0) +
+                                                (e.dart2 ?? 0) +
+                                                (e.dart3 ?? 0),
+                                          ) /
+                                      game.rounds
+                                          .where((e) => e.user == player)
+                                          .length)
+                            .toStringAsFixed(1);
+
+                    return Expanded(
+                      child: BCard(
+                        radius: 0,
+                        color: curr ? BColors().primary : null,
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: Column(
+                                children: [
+                                  BComment(
+                                    player.name,
+                                    color: curr ? BColors().background : null,
+                                    fontWeight: .w800,
+                                  ),
+                                  BSubtitle(
+                                    userPoint.toString(),
+                                    color: curr ? BColors().background : null,
+                                    fontWeight: .w800,
+                                    size: .x4l,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (game.rounds.isNotEmpty &&
+                                game.rounds.last.user == player)
+                              Positioned(
+                                child: BText(
+                                  "${((game.rounds.last.dart1 ?? 0) + (game.rounds.last.dart2 ?? 0) + (game.rounds.last.dart3 ?? 0),)}",
+                                ),
+                              ),
+
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: BComment(
+                                "PPR: $ppr",
+                                color: curr ? BColors().background : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          // microColumnSpacer,
+          BCard(
+            radius: 0,
+            child: Row(
+              children: [
+                Expanded(
+                  child: currentRound.dart1 == null
+                      ? HugeIcon(
+                          icon: HugeIcons.strokeRoundedDart,
+                          color: BColors().primary,
+                        )
+                      : BText(
+                          currentRound.dart1 == 0
+                              ? "Алдсан"
+                              : currentRound.dart1!.toString(),
+                          fontWeight: .w800,
+                          textAlign: .center,
+                        ),
+                ),
+                Expanded(
+                  child: currentRound.dart2 == null
+                      ? HugeIcon(
+                          icon: HugeIcons.strokeRoundedDart,
+                          color: currentRound.dart1 != null
+                              ? BColors().primary
+                              : null,
+                        )
+                      : BText(
+                          currentRound.dart2 == 0
+                              ? "Алдсан"
+                              : currentRound.dart2!.toString(),
+
+                          fontWeight: .w800,
+                          textAlign: .center,
+                        ),
+                ),
+                Expanded(
+                  child: currentRound.dart3 == null
+                      ? HugeIcon(
+                          icon: HugeIcons.strokeRoundedDart,
+                          color:
+                              currentRound.dart1 != null &&
+                                  currentRound.dart2 != null
+                              ? BColors().primary
+                              : null,
+                        )
+                      : BText(
+                          currentRound.dart3 == 0
+                              ? "Алдсан"
+                              : currentRound.dart3!.toString(),
+                          fontWeight: .w800,
+                          textAlign: .center,
+                        ),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 75,
+                  height: numbersHeight,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: BCard(
+                          radius: 0,
+                          onTap: () => onTapNumber(0),
+                          child: Center(
+                            child: BSubtitle(
+                              "Miss",
+                              textAlign: .center,
+                            ),
+                          ),
+                        ).withHaptic(),
+                      ),
+                      // microColumnSpacer,
+                      Expanded(
+                        flex: 2,
+                        child: BCard(
+                          radius: 0,
+                          color: Colors.amber[800],
+                          onTap: () => onTapNumber(25),
+                          child: Center(
+                            child: BSubtitle(
+                              "BULL (25)",
+                              textAlign: .center,
+                            ),
+                          ),
+                        ).withHaptic(),
+                      ),
+                      // microColumnSpacer,
+                      Expanded(
+                        flex: 2,
+                        child: BCard(
+                          radius: 0,
+                          color: Colors.deepOrangeAccent,
+                          onTap: () => onTapNumber(25, .d),
+                          child: Center(
+                            child: BSubtitle(
+                              "BULL (50)",
+                              textAlign: .center,
+                            ),
+                          ),
+                        ).withHaptic(),
+                      ),
+                    ],
+                  ),
+                ),
+                // smallRowSpacer,
+                SizedBox(
+                  width: numbersWidth,
+                  height: numbersHeight,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Wrap(
+                          children: List.generate(20, (index) {
+                            var number = index == 20 ? 25 : index + 1;
+                            bool isDisabled = number == 25 && dartType == .t;
+                            if (isDisabled) return Container();
+
+                            return BCard(
+                              height: numbersHeight / 5 - 2.8,
+                              width: numbersWidth / 12 - 2,
+                              radius: 0,
+                              onTap: () => onTapNumber(number),
+                              padding: .zero,
+                              child: Center(child: BText("$number")),
+                            ).withHaptic();
+                          }),
+                        ),
+                      ),
+                      // smallRowSpacer,
+                      Expanded(
+                        child: Wrap(
+                          children: List.generate(20, (index) {
+                            var number = index == 20 ? 25 : index + 1;
+                            bool isDisabled = number == 25 && dartType == .t;
+                            if (isDisabled) return Container();
+
+                            return BCard(
+                              height: numbersHeight / 5 - 2.8,
+                              width: numbersWidth / 12 - 2,
+                              radius: 0,
+                              color: Colors.amber[800],
+                              onTap: () => onTapNumber(number, .d),
+                              padding: .zero,
+                              child: Center(
+                                child: BText("$number"),
+                              ),
+                            ).withHaptic();
+                          }),
+                        ),
+                      ),
+                      // smallRowSpacer,
+                      Expanded(
+                        child: Wrap(
+                          children: List.generate(20, (index) {
+                            var number = index == 20 ? 25 : index + 1;
+                            bool isDisabled = number == 25 && dartType == .t;
+                            if (isDisabled) return Container();
+
+                            return BCard(
+                              height: numbersHeight / 5 - 2.8,
+                              width: numbersWidth / 12 - 2,
+                              radius: 0,
+                              onTap: () => onTapNumber(number, .t),
+                              color: Colors.deepOrangeAccent,
+                              padding: .zero,
+                              child: Center(
+                                child: BText("$number"),
+                              ),
+                            ).withHaptic();
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // smallRowSpacer,
+                SizedBox(
+                  width: 80,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: BCard(
+                          color: Colors.red,
+                          radius: 0,
+                          onTap: () => onTapBack(),
+                          child: Center(
+                            child: HugeIcon(
+                              icon: HugeIcons.strokeRoundedArrowLeft01,
+                            ),
+                          ),
+                        ).withHaptic(),
+                      ),
+                      // microColumnSpacer,
+                      Expanded(
+                        flex: 4,
+                        child: BCard(
+                          color: BColors().primary,
+                          radius: 0,
+                          onTap: () => onTapForward(),
+                          child: Center(
+                            child: BSubtitle(
+                              "NEXT\nPLAYER",
+                              color: BColors().background,
+                              textAlign: .center,
+                            ),
+                          ),
+                        ).withHaptic(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

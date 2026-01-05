@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:moon_design/moon_design.dart';
 
+const microColumnSpacer = SizedBox(height: 4);
 const smallColumnSpacer = SizedBox(height: 8);
 const mediumColumnSpacer = SizedBox(height: 16);
 const largeColumnSpacer = SizedBox(height: 24);
