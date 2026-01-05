@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:moon_design/moon_design.dart';
 
 class GameScreen extends ConsumerStatefulWidget {
@@ -52,6 +53,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       // DeviceOrientation.landscapeRight,
     ]);
 
+    click.setUrl("asset:assets/sounds/click.wav");
+    win.setUrl("asset:assets/sounds/win.wav");
+
     setState(() {
       game = widget.game;
       currentRound = Round(
@@ -65,8 +69,15 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+
+    win.dispose();
+    click.dispose();
+
     super.dispose();
   }
+
+  var click = AudioPlayer();
+  var win = AudioPlayer();
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +187,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   void onTapNumber(int number) async {
     HapticFeedback.mediumImpact();
+    click
+        .seek(Duration.zero)
+        .then(
+          (value) => click.play(),
+        );
 
     void nextPlayer() {
       game.rounds.add(currentRound);
@@ -231,6 +247,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     if (remaining == 0 && isDoubleFinish) {
       final winner = game.users[currentUserIndex];
+
+      win
+          .seek(Duration.zero)
+          .then(
+            (value) => win.play(),
+          );
 
       showMoonGameFinishedDialog(
         winnerName: winner.name,
@@ -295,13 +317,21 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   void onTapForward() {
+    click
+        .seek(Duration.zero)
+        .then(
+          (value) => click.play(),
+        );
+
     currentRound.dart1 ??= 0;
     currentRound.dart2 ??= 0;
     currentRound.dart3 ??= 0;
+
     game.rounds.add(currentRound);
 
     currentUserIndex = ((currentUserIndex + 1) % game.users.length).toInt();
     currentRound = Round(user: game.users[currentUserIndex]);
+
     setState(() {});
   }
 
@@ -324,7 +354,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 90,
+          height: 107,
           child: Row(
             spacing: 16,
             children: [
@@ -367,10 +397,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                                   userPoint.toString(),
                                   color: curr ? BColors().background : null,
                                   fontWeight: .w800,
+                                  size: .x4l,
                                 ),
                                 smallColumnSpacer,
                                 BComment(
                                   "PPR: $ppr",
+                                  color: curr ? BColors().background : null,
                                 ),
                               ],
                             ),
@@ -379,7 +411,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                               game.rounds.last.user == player)
                             Positioned(
                               child: BText(
-                                "${((game.rounds.last.dart1 ?? 0) + (game.rounds.last.dart1 ?? 0) + (game.rounds.last.dart1 ?? 0),)}",
+                                "${((game.rounds.last.dart1 ?? 0) + (game.rounds.last.dart2 ?? 0) + (game.rounds.last.dart3 ?? 0),)}",
                               ),
                             ),
                         ],
