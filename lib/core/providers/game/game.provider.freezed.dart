@@ -204,8 +204,8 @@ return $default(_that.date,_that.startFrom,_that.users,_that.rounds);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _Game implements Game {
-   _Game({required this.date, required this.startFrom, this.users = const <User>[], this.rounds = const <Round>[]});
+class _Game extends Game {
+   _Game({required this.date, required this.startFrom, this.users = const <User>[], this.rounds = const <Round>[]}): super._();
   factory _Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);
 
 @override  DateTime date;
@@ -273,7 +273,11 @@ as List<Round>,
 /// @nodoc
 mixin _$Round {
 
- User get user; set user(User value); int? get dart1; set dart1(int? value); int? get dart2; set dart2(int? value); int? get dart3; set dart3(int? value);
+ User get user; set user(User value); int? get dart1; set dart1(int? value); int? get dart2; set dart2(int? value); int? get dart3; set dart3(int? value);/// The round went over (or left an unfinishable 1). Its darts stay
+/// recorded so undo can restore them, but it scores nothing.
+ bool get bust;/// The round went over (or left an unfinishable 1). Its darts stay
+/// recorded so undo can restore them, but it scores nothing.
+ set bust(bool value);
 /// Create a copy of Round
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -288,7 +292,7 @@ $RoundCopyWith<Round> get copyWith => _$RoundCopyWithImpl<Round>(this as Round, 
 
 @override
 String toString() {
-  return 'Round(user: $user, dart1: $dart1, dart2: $dart2, dart3: $dart3)';
+  return 'Round(user: $user, dart1: $dart1, dart2: $dart2, dart3: $dart3, bust: $bust)';
 }
 
 
@@ -299,7 +303,7 @@ abstract mixin class $RoundCopyWith<$Res>  {
   factory $RoundCopyWith(Round value, $Res Function(Round) _then) = _$RoundCopyWithImpl;
 @useResult
 $Res call({
- User user, int? dart1, int? dart2, int? dart3
+ User user, int? dart1, int? dart2, int? dart3, bool bust
 });
 
 
@@ -316,13 +320,14 @@ class _$RoundCopyWithImpl<$Res>
 
 /// Create a copy of Round
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? user = null,Object? dart1 = freezed,Object? dart2 = freezed,Object? dart3 = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? user = null,Object? dart1 = freezed,Object? dart2 = freezed,Object? dart3 = freezed,Object? bust = null,}) {
   return _then(_self.copyWith(
 user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as User,dart1: freezed == dart1 ? _self.dart1 : dart1 // ignore: cast_nullable_to_non_nullable
 as int?,dart2: freezed == dart2 ? _self.dart2 : dart2 // ignore: cast_nullable_to_non_nullable
 as int?,dart3: freezed == dart3 ? _self.dart3 : dart3 // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,bust: null == bust ? _self.bust : bust // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of Round
@@ -416,10 +421,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( User user,  int? dart1,  int? dart2,  int? dart3)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( User user,  int? dart1,  int? dart2,  int? dart3,  bool bust)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Round() when $default != null:
-return $default(_that.user,_that.dart1,_that.dart2,_that.dart3);case _:
+return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust);case _:
   return orElse();
 
 }
@@ -437,10 +442,10 @@ return $default(_that.user,_that.dart1,_that.dart2,_that.dart3);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( User user,  int? dart1,  int? dart2,  int? dart3)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( User user,  int? dart1,  int? dart2,  int? dart3,  bool bust)  $default,) {final _that = this;
 switch (_that) {
 case _Round():
-return $default(_that.user,_that.dart1,_that.dart2,_that.dart3);case _:
+return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -457,10 +462,10 @@ return $default(_that.user,_that.dart1,_that.dart2,_that.dart3);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( User user,  int? dart1,  int? dart2,  int? dart3)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( User user,  int? dart1,  int? dart2,  int? dart3,  bool bust)?  $default,) {final _that = this;
 switch (_that) {
 case _Round() when $default != null:
-return $default(_that.user,_that.dart1,_that.dart2,_that.dart3);case _:
+return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust);case _:
   return null;
 
 }
@@ -471,14 +476,17 @@ return $default(_that.user,_that.dart1,_that.dart2,_that.dart3);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _Round implements Round {
-   _Round({required this.user, this.dart1, this.dart2, this.dart3});
+class _Round extends Round {
+   _Round({required this.user, this.dart1, this.dart2, this.dart3, this.bust = false}): super._();
   factory _Round.fromJson(Map<String, dynamic> json) => _$RoundFromJson(json);
 
 @override  User user;
 @override  int? dart1;
 @override  int? dart2;
 @override  int? dart3;
+/// The round went over (or left an unfinishable 1). Its darts stay
+/// recorded so undo can restore them, but it scores nothing.
+@override@JsonKey()  bool bust;
 
 /// Create a copy of Round
 /// with the given fields replaced by the non-null parameter values.
@@ -495,7 +503,7 @@ Map<String, dynamic> toJson() {
 
 @override
 String toString() {
-  return 'Round(user: $user, dart1: $dart1, dart2: $dart2, dart3: $dart3)';
+  return 'Round(user: $user, dart1: $dart1, dart2: $dart2, dart3: $dart3, bust: $bust)';
 }
 
 
@@ -506,7 +514,7 @@ abstract mixin class _$RoundCopyWith<$Res> implements $RoundCopyWith<$Res> {
   factory _$RoundCopyWith(_Round value, $Res Function(_Round) _then) = __$RoundCopyWithImpl;
 @override @useResult
 $Res call({
- User user, int? dart1, int? dart2, int? dart3
+ User user, int? dart1, int? dart2, int? dart3, bool bust
 });
 
 
@@ -523,13 +531,14 @@ class __$RoundCopyWithImpl<$Res>
 
 /// Create a copy of Round
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? user = null,Object? dart1 = freezed,Object? dart2 = freezed,Object? dart3 = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? user = null,Object? dart1 = freezed,Object? dart2 = freezed,Object? dart3 = freezed,Object? bust = null,}) {
   return _then(_Round(
 user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as User,dart1: freezed == dart1 ? _self.dart1 : dart1 // ignore: cast_nullable_to_non_nullable
 as int?,dart2: freezed == dart2 ? _self.dart2 : dart2 // ignore: cast_nullable_to_non_nullable
 as int?,dart3: freezed == dart3 ? _self.dart3 : dart3 // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,bust: null == bust ? _self.bust : bust // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

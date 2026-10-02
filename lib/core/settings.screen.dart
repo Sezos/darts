@@ -1,6 +1,7 @@
 import 'package:darts/core/providers/settings/settings.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/snackbar.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -22,18 +23,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      if (mounted) setState(() => controller.text = ref.read(userProvider).name);
-    });
+    controller.text = ref.read(userProvider).name;
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   void save() {
-    if (controller.text.isEmpty) {
-      showSnackMsg("Нэрээ оруулна уу", context, type: "errorPro");
+    final name = controller.text.trim();
+    if (name.isEmpty) {
+      showSnackMsg("Нэрээ оруулна уу", context, type: SnackType.error);
       return;
     }
-    ref.read(userProvider.notifier).updateUser(name: controller.text);
-    showSnackMsg("Амжилттай хадгалагдлаа", context);
+    ref.read(userProvider.notifier).updateUser(name: name);
+    showSnackMsg("Нэр хадгалагдлаа", context, type: SnackType.success);
     context.pop();
   }
 
@@ -57,139 +63,123 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 20,
-            children: [
-              // Avatar
-              Center(
-                child: Column(
-                  spacing: 10,
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [BColors().primary, const Color(0xFF00B87A)],
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 20,
+                children: [
+                  // Avatar
+                  Center(
+                    child: Column(
+                      spacing: 10,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                BColors().primary,
+                                BColors().primaryShade,
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: BColors().primary.withAlpha(80),
+                                blurRadius: 20,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: BText(
+                              initial,
+                              color: BColors().background,
+                              fontWeight: .w900,
+                              size: .x3l,
+                            ),
+                          ),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: BColors().primary.withAlpha(80),
-                            blurRadius: 20,
+                        BText(name, fontWeight: .w700, size: .l),
+                      ],
+                    ),
+                  ),
+
+                  // Profile section
+                  _SettingsCard(
+                    icon: HugeIcons.strokeRoundedUser,
+                    title: "Профайл",
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 8,
+                        children: [
+                          BComment(
+                            "Нэр",
+                            color: BColors().textSecondary,
+                            size: .s,
+                          ),
+                          MoonTextInput(
+                            controller: controller,
+                            hintText: "Нэрээ оруулна уу",
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) => save(),
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: BText(
-                          initial,
-                          color: BColors().background,
-                          fontWeight: .w900,
-                          size: .x3l,
-                        ),
-                      ),
-                    ),
-                    BText(name, fontWeight: .w700, size: .l),
-                  ],
-                ),
-              ),
+                    ],
+                  ),
 
-              // Profile section
-              _SettingsCard(
-                icon: HugeIcons.strokeRoundedUser,
-                title: "Профайл",
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 8,
+                  // Game rules section
+                  _SettingsCard(
+                    icon: HugeIcons.strokeRoundedDart,
+                    title: "Тоглоомын дүрэм",
                     children: [
-                      BComment(
-                        "Нэр",
-                        color: BColors().textSecondary,
-                        size: .s,
-                      ),
-                      MoonTextInput(
-                        controller: controller,
-                        hintText: "Нэрээ оруулна уу",
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              // Game rules section
-              _SettingsCard(
-                icon: HugeIcons.strokeRoundedDart,
-                title: "Тоглоомын дүрэм",
-                children: [
-                  _ToggleRow(
-                    label: "Double-out шаардлагатай",
-                    sublabel: "Дуусгахдаа double цохих ёстой",
-                    value: settings.doubleOutRequired,
-                    onChanged: (_) =>
-                        ref.read(settingsProvider.notifier).toggleDoubleOut(),
-                  ),
-                ],
-              ),
-
-              // Audio & feedback section
-              _SettingsCard(
-                icon: HugeIcons.strokeRoundedVolumeMute01,
-                title: "Дуу & Мэдрэмж",
-                children: [
-                  _ToggleRow(
-                    label: "Дуу",
-                    sublabel: "Цохилтын болон ялалтын дуу",
-                    value: settings.soundEnabled,
-                    onChanged: (_) =>
-                        ref.read(settingsProvider.notifier).toggleSound(),
-                  ),
-                  Divider(height: 1, color: BColors().border),
-                  _ToggleRow(
-                    label: "Хэрэгч",
-                    sublabel: "Дарахад чичиргээ",
-                    value: settings.hapticEnabled,
-                    onChanged: (_) =>
-                        ref.read(settingsProvider.notifier).toggleHaptic(),
-                  ),
-                ],
-              ),
-
-              // Save button
-              GestureDetector(
-                onTap: save,
-                child: Container(
-                  height: 52,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    gradient: LinearGradient(
-                      colors: [BColors().primary, const Color(0xFF00C278)],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: BColors().primary.withAlpha(80),
-                        blurRadius: 18,
-                        offset: const Offset(0, 4),
+                      _ToggleRow(
+                        label: "Double-out шаардлагатай",
+                        sublabel: "Дуусгахдаа double цохих ёстой",
+                        value: settings.doubleOutRequired,
+                        onChanged: (_) => ref
+                            .read(settingsProvider.notifier)
+                            .toggleDoubleOut(),
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: BText(
-                      "ХАДГАЛАХ",
-                      color: BColors().background,
-                      fontWeight: .w900,
-                      size: .l,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-              ),
 
-              const SizedBox(height: 8),
-            ],
+                  // Audio & feedback section
+                  _SettingsCard(
+                    icon: HugeIcons.strokeRoundedVolumeHigh,
+                    title: "Дуу & Мэдрэмж",
+                    children: [
+                      _ToggleRow(
+                        label: "Дуу",
+                        sublabel: "Цохилтын болон ялалтын дуу",
+                        value: settings.soundEnabled,
+                        onChanged: (_) =>
+                            ref.read(settingsProvider.notifier).toggleSound(),
+                      ),
+                      Divider(height: 1, color: BColors().border),
+                      _ToggleRow(
+                        label: "Чичиргээ",
+                        sublabel: "Товч дарах бүрт чичирнэ",
+                        value: settings.hapticEnabled,
+                        onChanged: (_) =>
+                            ref.read(settingsProvider.notifier).toggleHaptic(),
+                      ),
+                    ],
+                  ),
+
+                  // Saves the name; the toggles above apply immediately.
+                  PrimaryButton(label: "Нэр хадгалах", onTap: save),
+
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -261,20 +251,38 @@ class _ToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 2,
+    // The whole row toggles, and reads as one switch to screen readers.
+    return Semantics(
+      toggled: value,
+      label: "$label. $sublabel",
+      excludeSemantics: true,
+      onTap: () => onChanged(!value),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => onChanged(!value),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Row(
             children: [
-              BText(label, fontWeight: .w700),
-              BComment(sublabel, color: BColors().textSecondary, size: .s),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 2,
+                  children: [
+                    BText(label, fontWeight: .w700),
+                    BComment(
+                      sublabel,
+                      color: BColors().textSecondary,
+                      size: .s,
+                    ),
+                  ],
+                ),
+              ),
+              MoonSwitch(value: value, onChanged: onChanged),
             ],
           ),
         ),
-        MoonSwitch(value: value, onChanged: onChanged),
-      ],
+      ),
     );
   }
 }

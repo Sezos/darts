@@ -1,12 +1,17 @@
 import 'package:darts/core/providers/game/game.provider.dart';
+import 'package:darts/core/providers/game/ongoing_game.provider.dart';
+import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/utils/ads.dart';
 import 'package:darts/utils/analytics.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/dialogs.dart';
+import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
+
 class Homescreen extends ConsumerStatefulWidget {
   const Homescreen({super.key});
 
@@ -24,7 +29,8 @@ class _HomescreenState extends ConsumerState<Homescreen> {
   @override
   Widget build(BuildContext context) {
     final matches = ref.watch(historyProvider);
-    final avg = ref.read(historyProvider.notifier).getAverage();
+    final avg = averagePpr(matches, ref.watch(userProvider).id);
+    final ongoing = ref.watch(ongoingGameProvider);
     final size = MediaQuery.sizeOf(context);
 
     return Scaffold(
@@ -36,6 +42,7 @@ class _HomescreenState extends ConsumerState<Homescreen> {
             child: Image.asset(
               "assets/images/bg.png",
               fit: BoxFit.cover,
+              excludeFromSemantics: true,
             ),
           ),
           Positioned.fill(
@@ -76,106 +83,139 @@ class _HomescreenState extends ConsumerState<Homescreen> {
 
           // Main content
           SafeArea(
-            child: Column(
-              children: [
-                // Top bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: Column(
+                  children: [
+                    // Top bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
+                      child: Row(
                         children: [
-                          BText(
-                            "ДАРЦНЫ ОНОО",
-                            fontWeight: .w900,
-                            size: .xl,
-                            letterSpacing: 2.5,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              BText(
+                                "ДАРЦНЫ ОНОО",
+                                fontWeight: .w900,
+                                size: .xl,
+                                letterSpacing: 2.5,
+                              ),
+                              BComment(
+                                "Тоглолтын бүртгэл",
+                                color: BColors().textSecondary,
+                                size: .s,
+                              ),
+                            ],
                           ),
-                          BComment(
-                            "Тоглолтын бүртгэл",
-                            color: BColors().textSecondary,
-                            size: .s,
+                          const Spacer(),
+                          IconTile(
+                            icon: HugeIcons.strokeRoundedSettings01,
+                            label: "Тохиргоо",
+                            onTap: () => context.push("/settings"),
                           ),
                         ],
                       ),
-                      const Spacer(),
-                      _GlassIconButton(
-                        icon: HugeIcons.strokeRoundedSettings01,
-                        onTap: () => context.push("/settings"),
+                    ),
+
+                    const Spacer(),
+
+                    // Hero image
+                    SizedBox(
+                      width: (size.width * 0.5).clamp(140.0, 260.0),
+                      child: Image.asset(
+                        "assets/images/homescreen.png",
+                        excludeFromSemantics: true,
                       ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                const Spacer(),
+                    const Spacer(),
 
-                // Hero image
-                SizedBox(
-                  width: (size.width * 0.5).clamp(140.0, 260.0),
-                  child: Image.asset("assets/images/homescreen.png"),
-                ),
+                    // Stats cards
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        spacing: 12,
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              label: "Тоглосон",
+                              value: matches.length.toString(),
+                              icon: HugeIcons.strokeRoundedTarget01,
+                            ),
+                          ),
+                          Expanded(
+                            child: _StatCard(
+                              label: "Дундаж оноо",
+                              value: avg,
+                              icon: HugeIcons.strokeRoundedChart,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-                const Spacer(),
+                    const SizedBox(height: 20),
 
-                // Stats cards
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    spacing: 12,
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          label: "Тоглосон",
-                          value: matches.length.toString(),
-                          icon: HugeIcons.strokeRoundedTarget01,
+                    if (ongoing != null) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _ContinueCard(
+                          game: ongoing.game,
+                          onResume: () => context.push("/game", extra: ongoing),
+                          onDiscard: () async {
+                            final discard = await showConfirmDialog(
+                              context,
+                              title: "Тоглолтыг хаях уу?",
+                              message: "Дуусаагүй тоглолтын оноо устана.",
+                              confirmLabel: "Хаях",
+                              destructive: true,
+                            );
+                            if (discard) {
+                              ref.read(ongoingGameProvider.notifier).clear();
+                            }
+                          },
                         ),
                       ),
-                      Expanded(
-                        child: _StatCard(
-                          label: "Дундаж оноо",
-                          value: avg,
-                          icon: HugeIcons.strokeRoundedChart,
-                        ),
-                      ),
+                      const SizedBox(height: 12),
                     ],
-                  ),
-                ),
 
-                const SizedBox(height: 20),
-
-                // CTA buttons
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    spacing: 12,
-                    children: [
-                      Expanded(
-                        child: _GlowButton(
-                          label: "Эхлэх",
-                          icon: HugeIcons.strokeRoundedPlay,
-                          onTap: () => context.push("/players"),
-                        ),
+                    // CTA buttons
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        spacing: 12,
+                        children: [
+                          Expanded(
+                            child: PrimaryButton(
+                              label: ongoing != null ? "Шинэ тоглолт" : "Эхлэх",
+                              icon: HugeIcons.strokeRoundedPlay,
+                              onTap: () => context.push("/players"),
+                            ),
+                          ),
+                          IconTile(
+                            icon: HugeIcons.strokeRoundedClock04,
+                            label: "Түүх",
+                            size: 52,
+                            onTap: () => context.push("/history"),
+                          ),
+                        ],
                       ),
-                      _GlassIconButton(
-                        icon: HugeIcons.strokeRoundedClock04,
-                        size: 52,
-                        onTap: () => context.push("/history"),
-                      ),
-                    ],
-                  ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Non-intrusive banner — only shows once loaded
+                    const HomeBannerAd(),
+
+                    const SizedBox(height: 16),
+                  ],
                 ),
-
-                const SizedBox(height: 16),
-
-                // Non-intrusive banner — only shows once loaded
-                const HomeBannerAd(),
-
-                const SizedBox(height: 16),
-              ],
+              ),
             ),
           ),
         ],
@@ -252,92 +292,85 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _GlowButton extends StatelessWidget {
-  const _GlowButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
+class _ContinueCard extends StatelessWidget {
+  const _ContinueCard({
+    required this.game,
+    required this.onResume,
+    required this.onDiscard,
   });
-  final String label;
-  final dynamic icon;
-  final VoidCallback onTap;
+  final Game game;
+  final VoidCallback onResume;
+  final VoidCallback onDiscard;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          gradient: LinearGradient(
-            colors: [
-              BColors().primary,
-              const Color(0xFF00C278),
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: BColors().primary.withAlpha(90),
-              blurRadius: 20,
-              spreadRadius: 0,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 10,
-          children: [
-            HugeIcon(
-              icon: icon,
-              color: BColors().background,
-              strokeWidth: 2.5,
-              size: 20,
-            ),
-            BText(
-              label,
-              color: BColors().background,
-              fontWeight: .w900,
-              size: .l,
-              letterSpacing: 1,
-            ),
-          ],
-        ),
+    final players = game.users.map((u) => u.name).join(" vs ");
+
+    return Container(
+      decoration: BoxDecoration(
+        color: BColors().primaryDim,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BColors().primaryBorder),
       ),
-    );
-  }
-}
-
-class _GlassIconButton extends StatelessWidget {
-  const _GlassIconButton({
-    required this.icon,
-    required this.onTap,
-    this.size = 44,
-  });
-  final dynamic icon;
-  final VoidCallback onTap;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: BColors().lighter,
-          border: Border.all(color: BColors().border),
-        ),
-        child: Center(
-          child: HugeIcon(
-            icon: icon,
-            color: BColors().textPrimary,
-            size: 20,
+      child: Row(
+        children: [
+          Expanded(
+            child: Pressable(
+              onTap: onResume,
+              semanticLabel:
+                  "Тоглолт үргэлжлүүлэх, ${game.startFrom}, $players",
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 4, 12),
+                child: Row(
+                  spacing: 12,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: BColors().primary,
+                      ),
+                      child: Center(
+                        child: HugeIcon(
+                          icon: HugeIcons.strokeRoundedPlay,
+                          color: BColors().onPrimary,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 2,
+                        children: [
+                          BText(
+                            "Тоглолт үргэлжлүүлэх",
+                            fontWeight: .w800,
+                            color: BColors().primary,
+                          ),
+                          BComment(
+                            "${game.startFrom} · $players",
+                            color: BColors().textSecondary,
+                            size: .s,
+                            maxLine: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+          IconAction(
+            icon: HugeIcons.strokeRoundedCancel01,
+            label: "Тоглолтыг хаях",
+            onTap: onDiscard,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
     );
   }

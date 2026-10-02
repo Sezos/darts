@@ -16,13 +16,13 @@ class PlayersNotifier extends _$PlayersNotifier {
     if (players == null) {
       final lol = [
         user,
-        User(id: 2, name: "Player 2"),
-        User(id: 3, name: "Player 3"),
-        User(id: 4, name: "Player 4"),
-        User(id: 5, name: "Player 5"),
-        User(id: 6, name: "Player 6"),
-        User(id: 7, name: "Player 7"),
-        User(id: 8, name: "Player 8"),
+        User(id: 2, name: "Тоглогч 2"),
+        User(id: 3, name: "Тоглогч 3"),
+        User(id: 4, name: "Тоглогч 4"),
+        User(id: 5, name: "Тоглогч 5"),
+        User(id: 6, name: "Тоглогч 6"),
+        User(id: 7, name: "Тоглогч 7"),
+        User(id: 8, name: "Тоглогч 8"),
       ];
       saveState(lol);
       return lol;

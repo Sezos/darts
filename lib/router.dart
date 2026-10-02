@@ -3,6 +3,7 @@ import 'package:darts/core/history.screen.dart';
 import 'package:darts/core/homescreen.dart';
 import 'package:darts/core/players.screen.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
+import 'package:darts/core/providers/game/ongoing_game.provider.dart';
 import 'package:darts/core/settings.screen.dart';
 import 'package:darts/core/stats.screen.dart';
 import 'package:go_router/go_router.dart';
@@ -24,7 +25,12 @@ final router = GoRouter(
     ),
     GoRoute(
       path: "/game",
-      builder: (context, state) => GameScreen(state.extra as Game),
+      // A new Game starts fresh; an OngoingGame resumes where it was left.
+      builder: (context, state) => switch (state.extra) {
+        OngoingGame o => GameScreen(o.game, resumeRound: o.current),
+        Game g => GameScreen(g),
+        _ => const Homescreen(),
+      },
     ),
     GoRoute(
       path: "/history",

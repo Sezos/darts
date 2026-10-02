@@ -4,6 +4,8 @@ import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/players/players.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/dialogs.dart';
+import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/snackbar.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -28,11 +30,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      setState(() {
-        playersToPlay.add(ref.read(userProvider));
-      });
-    });
+    playersToPlay.add(ref.read(userProvider));
   }
 
   @override
@@ -59,190 +57,206 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 20,
-                children: [
-                  // ── Game mode ──────────────────────────────────────────
-                  _Section(
-                    label: "Тоглоомын төрөл",
-                    child: _GameModeSelector(
-                      selected: startCount,
-                      onSelect: (v) => setState(() => startCount = v),
-                    ),
-                  ),
-
-                  // ── Selected players ───────────────────────────────────
-                  _Section(
-                    label: "Эрэмбэ",
-                    trailing: Row(
-                      spacing: 8,
-                      children: [
-                        BComment(
-                          "Random",
-                          color: BColors().textSecondary,
-                          size: .s,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 20,
+                    children: [
+                      // ── Game mode ──────────────────────────────────────────
+                      _Section(
+                        label: "Тоглоомын төрөл",
+                        child: _GameModeSelector(
+                          selected: startCount,
+                          onSelect: (v) => setState(() => startCount = v),
                         ),
-                        MoonSwitch(
-                          value: isRandom,
-                          onChanged: (v) => setState(() => isRandom = v),
-                        ),
-                      ],
-                    ),
-                    child: SizedBox(
-                      height: (MediaQuery.sizeOf(context).height * 0.12).clamp(
-                        90.0,
-                        120.0,
                       ),
-                      child: playersToPlay.isEmpty
-                          ? Center(
-                              child: BComment(
-                                "Тоглогч сонгоно уу",
-                                color: BColors().textSecondary,
-                              ),
-                            )
-                          : ReorderableListView(
-                              buildDefaultDragHandles: false,
-                              scrollDirection: Axis.horizontal,
-                              onReorder: (oldIndex, newIndex) {
-                                setState(() {
-                                  if (newIndex > oldIndex) newIndex--;
-                                  final item = playersToPlay.removeAt(oldIndex);
-                                  playersToPlay.insert(newIndex, item);
-                                });
-                              },
-                              children: playersToPlay
-                                  .asMap()
-                                  .entries
-                                  .map(
-                                    (e) => _SelectedPlayerCard(
-                                      key: Key(e.value.id.toString()),
-                                      user: e.value,
-                                      index: e.key,
-                                      isRandom: isRandom,
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                    ),
-                  ),
 
-                  // ── All players ────────────────────────────────────────
-                  _Section(
-                    label: "Бүх тоглогчид",
-                    trailing: GestureDetector(
-                      onTap: () => _showPlayerSheet(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: BColors().primaryDim,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: BColors().primaryBorder),
-                        ),
-                        child: Row(
-                          spacing: 4,
+                      // ── Selected players ───────────────────────────────────
+                      _Section(
+                        label: "Эрэмбэ",
+                        trailing: Row(
+                          spacing: 8,
                           children: [
-                            HugeIcon(
-                              icon: HugeIcons.strokeRoundedUserAdd01,
-                              color: BColors().primary,
-                              size: 14,
-                            ),
-                            BText(
-                              "Нэмэх",
-                              color: BColors().primary,
+                            BComment(
+                              "Санамсаргүй",
+                              color: BColors().textSecondary,
                               size: .s,
-                              fontWeight: .w700,
+                            ),
+                            MoonSwitch(
+                              value: isRandom,
+                              onChanged: (v) => setState(() => isRandom = v),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                    child: Column(
-                      spacing: 8,
-                      children: players
-                          .map(
-                            (player) => _PlayerRow(
-                              player: player,
-                              isSelected: playersToPlay.any(
-                                (e) => e.id == player.id,
+                        child: SizedBox(
+                          height: (MediaQuery.sizeOf(context).height * 0.12)
+                              .clamp(
+                                90.0,
+                                120.0,
                               ),
-                              isCurrentUser:
-                                  player.id == ref.watch(userProvider).id,
-                              onToggle: () {
-                                HapticFeedback.mediumImpact();
-                                setState(() {
-                                  final has = playersToPlay.any(
-                                    (e) => e.id == player.id,
-                                  );
-                                  if (has) {
-                                    playersToPlay.removeWhere(
-                                      (e) => e.id == player.id,
-                                    );
-                                  } else {
-                                    if (playersToPlay.length >= 5) {
-                                      showSnackMsg(
-                                        "Ихдээ 5 тоглогч байна",
-                                        context,
+                          child: playersToPlay.isEmpty
+                              ? Center(
+                                  child: BComment(
+                                    "Тоглогч сонгоно уу",
+                                    color: BColors().textSecondary,
+                                  ),
+                                )
+                              : ReorderableListView(
+                                  buildDefaultDragHandles: false,
+                                  scrollDirection: Axis.horizontal,
+                                  onReorder: (oldIndex, newIndex) {
+                                    setState(() {
+                                      if (newIndex > oldIndex) newIndex--;
+                                      final item = playersToPlay.removeAt(
+                                        oldIndex,
                                       );
-                                      return;
-                                    }
-                                    playersToPlay.add(player);
-                                  }
-                                });
-                              },
-                              onEdit: () => _showEditSheet(context, player),
-                              onDelete: () => showDialogPro(
-                                "Тоглогч устгах",
-                                "Тоглогчийг устгахуу?",
-                                context,
-                                btnOkColor: Colors.red,
-                                btnOkText: "Устгах",
-                                onOkButton: () {
-                                  ref
-                                      .read(playersProvider.notifier)
-                                      .deletePlayer(player.id);
-                                  setState(() {
-                                    playersToPlay.removeWhere(
-                                      (p) => p.id == player.id,
-                                    );
-                                  });
-                                  context.pop();
-                                },
+                                      playersToPlay.insert(newIndex, item);
+                                    });
+                                  },
+                                  children: playersToPlay
+                                      .asMap()
+                                      .entries
+                                      .map(
+                                        (e) => _SelectedPlayerCard(
+                                          key: Key(e.value.id.toString()),
+                                          user: e.value,
+                                          index: e.key,
+                                          isRandom: isRandom,
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                        ),
+                      ),
+
+                      // ── All players ────────────────────────────────────────
+                      _Section(
+                        label: "Бүх тоглогчид",
+                        trailing: Pressable(
+                          onTap: () => _showPlayerSheet(context),
+                          semanticLabel: "Тоглогч нэмэх",
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: BColors().primaryDim,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: BColors().primaryBorder,
                               ),
                             ),
-                          )
-                          .toList(),
-                    ),
+                            child: Row(
+                              spacing: 4,
+                              children: [
+                                HugeIcon(
+                                  icon: HugeIcons.strokeRoundedUserAdd01,
+                                  color: BColors().primary,
+                                  size: 14,
+                                ),
+                                BText(
+                                  "Нэмэх",
+                                  color: BColors().primary,
+                                  size: .s,
+                                  fontWeight: .w700,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        child: Column(
+                          spacing: 8,
+                          children: players
+                              .map(
+                                (player) => _PlayerRow(
+                                  player: player,
+                                  isSelected: playersToPlay.any(
+                                    (e) => e.id == player.id,
+                                  ),
+                                  isCurrentUser:
+                                      player.id == ref.watch(userProvider).id,
+                                  onToggle: () {
+                                    HapticFeedback.mediumImpact();
+                                    setState(() {
+                                      final has = playersToPlay.any(
+                                        (e) => e.id == player.id,
+                                      );
+                                      if (has) {
+                                        playersToPlay.removeWhere(
+                                          (e) => e.id == player.id,
+                                        );
+                                      } else {
+                                        if (playersToPlay.length >= 5) {
+                                          showSnackMsg(
+                                            "Нэг тоглолтод 5 хүртэл тоглогч оролцоно",
+                                            context,
+                                          );
+                                          return;
+                                        }
+                                        playersToPlay.add(player);
+                                      }
+                                    });
+                                  },
+                                  onEdit: () => _showEditSheet(context, player),
+                                  onDelete: () async {
+                                    final confirmed = await showConfirmDialog(
+                                      context,
+                                      title: "«${player.name}»-г устгах уу?",
+                                      message:
+                                          "Түүхэн дэх тоглолтууд хэвээр үлдэнэ.",
+                                      confirmLabel: "Устгах",
+                                      destructive: true,
+                                    );
+                                    if (!confirmed) return;
+                                    ref
+                                        .read(playersProvider.notifier)
+                                        .deletePlayer(player.id);
+                                    setState(() {
+                                      playersToPlay.removeWhere(
+                                        (p) => p.id == player.id,
+                                      );
+                                    });
+                                  },
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
 
           // ── Bottom start button ──────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Column(
-              children: [
-                _StartButton(
-                  enabled: playersToPlay.isNotEmpty,
-                  onTap: () => context.push(
-                    '/game',
-                    extra: Game(
-                      date: DateTime.now(),
-                      startFrom: startCount,
-                      users: isRandom
-                          ? secureShuffled(playersToPlay)
-                          : playersToPlay,
-                      rounds: [],
-                    ),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Column(
+                children: [
+                  PrimaryButton(
+                    label: "Эхлэх",
+                    onTap: playersToPlay.isEmpty
+                        ? null
+                        : () => context.push(
+                            '/game',
+                            extra: Game(
+                              date: DateTime.now(),
+                              startFrom: startCount,
+                              users: isRandom
+                                  ? secureShuffled(playersToPlay)
+                                  : [...playersToPlay],
+                            ),
+                          ),
                   ),
-                ),
-                SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
-              ],
+                  SizedBox(height: MediaQuery.paddingOf(context).bottom + 16),
+                ],
+              ),
             ),
           ),
         ],
@@ -252,55 +266,50 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
 
   void _showPlayerSheet(BuildContext context) {
     final controller = TextEditingController();
-    showMoonModalBottomSheet(
+    showMoonModalBottomSheet<void>(
       context: context,
       backgroundColor: BColors().surface,
       builder: (ctx) => _PlayerSheet(
         title: "Тоглогч нэмэх",
         controller: controller,
         onSave: () {
-          if (controller.text.isNotEmpty) {
+          final name = controller.text.trim();
+          if (name.isNotEmpty) {
             ref
                 .read(playersProvider.notifier)
                 .addPlayer(
-                  User(
-                    id: DateTime.now().millisecondsSinceEpoch,
-                    name: controller.text,
-                  ),
+                  User(id: DateTime.now().millisecondsSinceEpoch, name: name),
                 );
             ctx.pop();
           }
         },
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 
   void _showEditSheet(BuildContext context, User player) {
     final controller = TextEditingController(text: player.name);
-    showMoonModalBottomSheet(
+    showMoonModalBottomSheet<void>(
       context: context,
       backgroundColor: BColors().surface,
       builder: (ctx) => _PlayerSheet(
         title: "Тоглогч засах",
         controller: controller,
         onSave: () {
-          if (controller.text.isNotEmpty) {
+          final name = controller.text.trim();
+          if (name.isNotEmpty) {
             ref
                 .read(playersProvider.notifier)
-                .updatePlayer(
-                  player.copyWith(name: controller.text),
-                );
+                .updatePlayer(player.copyWith(name: name));
             setState(() {
               final i = playersToPlay.indexWhere((p) => p.id == player.id);
-              if (i != -1) {
-                playersToPlay[i] = player.copyWith(name: controller.text);
-              }
+              if (i != -1) playersToPlay[i] = player.copyWith(name: name);
             });
             ctx.pop();
           }
         },
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 }
 
@@ -358,7 +367,8 @@ class _GameModeSelector extends StatelessWidget {
         children: [101, 301, 501, 701].map((v) {
           final isSelected = selected == v;
           return Expanded(
-            child: GestureDetector(
+            child: Pressable(
+              selected: isSelected,
               onTap: () {
                 HapticFeedback.selectionClick();
                 onSelect(v);
@@ -366,7 +376,7 @@ class _GameModeSelector extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 curve: Curves.easeOut,
-                height: 40,
+                height: 44,
                 decoration: BoxDecoration(
                   color: isSelected ? BColors().primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
@@ -488,11 +498,13 @@ class _PlayerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Pressable(
       onTap: onToggle,
+      selected: isSelected,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.fromLTRB(14, 4, 10, 4),
+        constraints: const BoxConstraints(minHeight: 52),
         decoration: BoxDecoration(
           color: isSelected ? BColors().primaryDim : BColors().lighter,
           borderRadius: BorderRadius.circular(14),
@@ -535,14 +547,15 @@ class _PlayerRow extends StatelessWidget {
               ),
             ),
             if (!isCurrentUser) ...[
-              _IconBtn(
+              IconAction(
                 icon: HugeIcons.strokeRoundedPencilEdit02,
-                color: BColors().textSecondary,
+                label: "${player.name}-г засах",
                 onTap: onEdit,
               ),
-              _IconBtn(
+              IconAction(
                 icon: HugeIcons.strokeRoundedDelete01,
-                color: Colors.red.withAlpha(180),
+                label: "${player.name}-г устгах",
+                color: BColors().danger.withAlpha(200),
                 onTap: onDelete,
               ),
             ],
@@ -550,77 +563,10 @@ class _PlayerRow extends StatelessWidget {
               icon: isSelected
                   ? HugeIcons.strokeRoundedCheckmarkCircle01
                   : HugeIcons.strokeRoundedAddCircle,
-              color: isSelected ? BColors().primary : BColors().border,
+              color: isSelected ? BColors().primary : BColors().textSecondary,
               size: 20,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _IconBtn extends StatelessWidget {
-  const _IconBtn({
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-  final dynamic icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: HugeIcon(icon: icon, color: color, size: 18),
-      ),
-    );
-  }
-}
-
-class _StartButton extends StatelessWidget {
-  const _StartButton({required this.enabled, required this.onTap});
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 52,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          gradient: enabled
-              ? LinearGradient(
-                  colors: [BColors().primary, const Color(0xFF00C278)],
-                )
-              : null,
-          color: enabled ? null : BColors().lighter,
-          boxShadow: enabled
-              ? [
-                  BoxShadow(
-                    color: BColors().primary.withAlpha(80),
-                    blurRadius: 18,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-          border: enabled ? null : Border.all(color: BColors().border),
-        ),
-        child: Center(
-          child: BText(
-            "Эхлэх",
-            color: enabled ? BColors().background : BColors().textSecondary,
-            fontWeight: .w900,
-            size: .l,
-            letterSpacing: 1,
-          ),
         ),
       ),
     );
@@ -657,47 +603,28 @@ class _PlayerSheet extends StatelessWidget {
               children: [
                 BText(title, fontWeight: .w800, size: .l),
                 const Spacer(),
-                GestureDetector(
+                IconAction(
+                  icon: HugeIcons.strokeRoundedCancel01,
+                  label: "Хаах",
                   onTap: () => context.pop(),
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedCancel01,
-                    color: BColors().textSecondary,
-                    size: 20,
-                  ),
                 ),
               ],
             ),
-            MoonTextInput(
-              controller: controller,
-              hintText: "Нэр",
-              autofocus: true,
-            ),
-            GestureDetector(
-              onTap: onSave,
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: LinearGradient(
-                    colors: [BColors().primary, const Color(0xFF00C278)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: BColors().primary.withAlpha(80),
-                      blurRadius: 16,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 8,
+              children: [
+                BComment("Нэр", color: BColors().textSecondary, size: .s),
+                MoonTextInput(
+                  controller: controller,
+                  hintText: "Жишээ нь: Бат",
+                  autofocus: true,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => onSave(),
                 ),
-                child: Center(
-                  child: BText(
-                    "Хадгалах",
-                    color: BColors().background,
-                    fontWeight: .w800,
-                  ),
-                ),
-              ),
+              ],
             ),
+            PrimaryButton(label: "Хадгалах", height: 48, onTap: onSave),
           ],
         ),
       ),

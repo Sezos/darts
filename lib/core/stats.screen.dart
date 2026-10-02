@@ -14,7 +14,7 @@ class StatsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final allGames = ref.watch(historyProvider);
     final myGames = allGames
-        .where((g) => g.users.any((u) => u.id == userId) && g.rounds.isNotEmpty)
+        .where((g) => g.users.any((u) => u.id == userId) && g.winner != null)
         .toList();
 
     if (myGames.isEmpty) {
@@ -43,8 +43,11 @@ class StatsScreen extends ConsumerWidget {
                 ),
               ),
               BText("Статистик байхгүй", fontWeight: .w700),
-              BComment("Тоглолт дуусаны дараа энд харагдана",
-                  color: BColors().textSecondary, textAlign: TextAlign.center),
+              BComment(
+                "Тоглолт дууссаны дараа энд харагдана",
+                color: BColors().textSecondary,
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
@@ -52,29 +55,27 @@ class StatsScreen extends ConsumerWidget {
     }
 
     // Calculate stats
-    final wins = myGames.where((g) => g.rounds.last.user.id == userId).length;
+    final wins = myGames.where((g) => g.winner!.id == userId).length;
     final losses = myGames.length - wins;
     final winRate = (wins / myGames.length * 100).toStringAsFixed(0);
 
     final myRounds = myGames.expand(
       (g) => g.rounds.where((r) => r.user.id == userId),
     );
-    final roundScores = myRounds
-        .map((r) => (r.dart1 ?? 0) + (r.dart2 ?? 0) + (r.dart3 ?? 0))
-        .toList();
+    final roundScores = myRounds.map((r) => r.total).toList();
     final avgPPR = roundScores.isEmpty
         ? '-'
         : (roundScores.reduce((a, b) => a + b) / roundScores.length)
-            .toStringAsFixed(1);
+              .toStringAsFixed(1);
     final bestRound = roundScores.isEmpty
         ? '-'
         : roundScores.reduce((a, b) => a > b ? a : b).toString();
-    final totalDarts = roundScores.length * 3;
+    final totalDarts = myRounds.fold(0, (n, r) => n + r.dartsThrown);
 
     // Opponent breakdown
     final opponentMap = <String, _OpponentRecord>{};
     for (final g in myGames) {
-      final won = g.rounds.last.user.id == userId;
+      final won = g.winner!.id == userId;
       for (final u in g.users) {
         if (u.id == userId) continue;
         final rec = opponentMap[u.name] ?? _OpponentRecord(u.name);
@@ -120,7 +121,7 @@ class StatsScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [BColors().primary, const Color(0xFF00B87A)],
+                        colors: [BColors().primary, BColors().primaryShade],
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -171,7 +172,7 @@ class StatsScreen extends ConsumerWidget {
                     value: losses.toString(),
                     label: "Ялагдал",
                     icon: HugeIcons.strokeRoundedSad01,
-                    color: Colors.red,
+                    color: BColors().danger,
                   ),
                 ),
                 Expanded(
@@ -236,8 +237,11 @@ class _OpponentRecord {
   final int wins;
   final int losses;
   const _OpponentRecord(this.name, {this.wins = 0, this.losses = 0});
-  _OpponentRecord copyWith({int? wins, int? losses}) =>
-      _OpponentRecord(name, wins: wins ?? this.wins, losses: losses ?? this.losses);
+  _OpponentRecord copyWith({int? wins, int? losses}) => _OpponentRecord(
+    name,
+    wins: wins ?? this.wins,
+    losses: losses ?? this.losses,
+  );
 }
 
 // ─── Sub-widgets ─────────────────────────────────────────────────────────────
@@ -309,7 +313,12 @@ class _StatTile extends StatelessWidget {
         spacing: 4,
         children: [
           BText(value, fontWeight: .w900, size: .xl),
-          BComment(label, color: BColors().textSecondary, size: .x2s, textAlign: TextAlign.center),
+          BComment(
+            label,
+            color: BColors().textSecondary,
+            size: .x2s,
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -364,7 +373,7 @@ class _OpponentTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: winPct,
-                      backgroundColor: Colors.red.withAlpha(40),
+                      backgroundColor: BColors().danger.withAlpha(40),
                       valueColor: AlwaysStoppedAnimation(BColors().primary),
                       minHeight: 4,
                     ),
@@ -376,7 +385,7 @@ class _OpponentTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 BText(
-                  "${record.wins}W ${record.losses}L",
+                  "${record.wins} – ${record.losses}",
                   fontWeight: .w800,
                   size: .s,
                 ),

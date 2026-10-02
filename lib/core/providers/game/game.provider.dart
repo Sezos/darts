@@ -7,6 +7,8 @@ part 'game.provider.freezed.dart';
 
 @unfreezed
 abstract class Game with _$Game {
+  Game._();
+
   factory Game({
     required DateTime date,
     required int startFrom,
@@ -15,18 +17,38 @@ abstract class Game with _$Game {
   }) = _Game;
 
   factory Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);
+
+  /// For a finished game, the player whose round checked out.
+  /// Saved games always end on the winning round.
+  User? get winner => rounds.isEmpty ? null : rounds.last.user;
 }
 
 @unfreezed
 abstract class Round with _$Round {
+  Round._();
+
   factory Round({
     required User user,
     int? dart1,
     int? dart2,
     int? dart3,
+
+    /// The round went over (or left an unfinishable 1). Its darts stay
+    /// recorded so undo can restore them, but it scores nothing.
+    @Default(false) bool bust,
   }) = _Round;
 
   factory Round.fromJson(Map<String, dynamic> json) => _$RoundFromJson(json);
+
+  List<int?> get darts => [dart1, dart2, dart3];
+
+  int get dartsThrown => darts.where((d) => d != null).length;
+
+  /// Sum of the darts thrown, ignoring bust.
+  int get rawTotal => (dart1 ?? 0) + (dart2 ?? 0) + (dart3 ?? 0);
+
+  /// Points this round takes off the player's remaining score.
+  int get total => bust ? 0 : rawTotal;
 }
 
 @riverpod
@@ -46,50 +68,28 @@ class HistoryNotifier extends _$HistoryNotifier {
     return (games as List).map((e) => Game.fromJson(e)).toList();
   }
 
-  String getAverage() {
-    final user = ref.watch(userProvider);
-    final myMatches = state
-        .where((e) => e.users.any((e) => e.id == user.id))
-        .toList();
-
-    List<int> myPPRs = myMatches.fold(
-      [],
-      (value, e) => [
-        ...value,
-        ...e.rounds
-            .where((e) => e.user.id == user.id)
-            .fold(
-              [],
-              (value1, e1) => [
-                ...value1,
-                (e1.dart1 ?? 0) + (e1.dart2 ?? 0) + (e1.dart3 ?? 0),
-              ],
-            ),
-      ],
-    );
-
-    if (myPPRs.isEmpty) {
-      return "-";
-    }
-
-    return ((myPPRs.reduce((value, element) => value + element)) /
-            myPPRs.length)
-        .toStringAsFixed(1);
-  }
-
   void addGame(Game game) {
     state = [...state, game];
     saveState();
   }
 
-  void deleteGame(int index) {
-    final list = [...state];
-    list.removeAt(index);
-    state = list;
+  void deleteGame(Game game) {
+    state = state.where((g) => !identical(g, game)).toList();
     saveState();
   }
 
   void saveState([List<Game>? list]) {
     storage.write(key, (list ?? state).map((e) => e.toJson()).toList());
   }
+}
+
+/// Average points per round for [userId] across saved games, or "-".
+String averagePpr(List<Game> games, int userId) {
+  final scores = [
+    for (final g in games)
+      for (final r in g.rounds)
+        if (r.user.id == userId) r.total,
+  ];
+  if (scores.isEmpty) return "-";
+  return (scores.reduce((a, b) => a + b) / scores.length).toStringAsFixed(1);
 }

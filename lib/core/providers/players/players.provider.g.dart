@@ -41,7 +41,7 @@ final class PlayersNotifierProvider
   }
 }
 
-String _$playersNotifierHash() => r'73df1c1a991c52bffd1d0ba594d02655a2885695';
+String _$playersNotifierHash() => r'835502fa096544d3ebbf29358386fd98c8ac9687';
 
 abstract class _$PlayersNotifier extends $Notifier<List<User>> {
   List<User> build();

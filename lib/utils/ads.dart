@@ -22,7 +22,19 @@ class AdService {
 
   // ── Initialization ─────────────────────────────────────────────────────────
 
-  static Future<void> initialize() => MobileAds.instance.initialize();
+  static bool _ready = false;
+  static bool get isReady => _ready;
+
+  /// Safe to call when AdMob isn't set up: failure leaves ads switched off.
+  static Future<void> initialize() async {
+    if (!(Platform.isIOS || Platform.isAndroid)) return;
+    try {
+      await MobileAds.instance.initialize();
+      _ready = true;
+    } catch (e) {
+      debugPrint('AdService: initialize failed: $e');
+    }
+  }
 
   // ── Banner ─────────────────────────────────────────────────────────────────
 
@@ -65,6 +77,7 @@ class _HomeBannerAdState extends State<HomeBannerAd> {
   @override
   void initState() {
     super.initState();
+    if (!AdService.isReady) return;
     AdService.loadBanner(
       size: AdSize.banner,
       onLoaded: (ad) {

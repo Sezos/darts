@@ -25,7 +25,7 @@ class UserNotifier extends _$UserNotifier {
     if (storage.read(key) != null) {
       return User.fromJson(storage.read(key));
     }
-    return User(id: 0, name: "Player 1");
+    return User(id: 0, name: "Тоглогч 1");
   }
 
   User updateUser({String? name, int? ppd}) {

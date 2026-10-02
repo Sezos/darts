@@ -33,6 +33,7 @@ _Round _$RoundFromJson(Map<String, dynamic> json) => _Round(
   dart1: (json['dart1'] as num?)?.toInt(),
   dart2: (json['dart2'] as num?)?.toInt(),
   dart3: (json['dart3'] as num?)?.toInt(),
+  bust: json['bust'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$RoundToJson(_Round instance) => <String, dynamic>{
@@ -40,6 +41,7 @@ Map<String, dynamic> _$RoundToJson(_Round instance) => <String, dynamic>{
   'dart1': instance.dart1,
   'dart2': instance.dart2,
   'dart3': instance.dart3,
+  'bust': instance.bust,
 };
 
 // **************************************************************************
@@ -81,7 +83,7 @@ final class HistoryNotifierProvider
   }
 }
 
-String _$historyNotifierHash() => r'fb93d4c8bfb2d05c360dc3eb9ca47b3a53da60d6';
+String _$historyNotifierHash() => r'8c75f92fb5e5c2f7dd35df71bf78550cc18868dd';
 
 abstract class _$HistoryNotifier extends $Notifier<List<Game>> {
   List<Game> build();

@@ -16,24 +16,23 @@ class AppSettings {
     bool? soundEnabled,
     bool? hapticEnabled,
     bool? doubleOutRequired,
-  }) =>
-      AppSettings(
-        soundEnabled: soundEnabled ?? this.soundEnabled,
-        hapticEnabled: hapticEnabled ?? this.hapticEnabled,
-        doubleOutRequired: doubleOutRequired ?? this.doubleOutRequired,
-      );
+  }) => AppSettings(
+    soundEnabled: soundEnabled ?? this.soundEnabled,
+    hapticEnabled: hapticEnabled ?? this.hapticEnabled,
+    doubleOutRequired: doubleOutRequired ?? this.doubleOutRequired,
+  );
 
   Map<String, dynamic> toJson() => {
-        'soundEnabled': soundEnabled,
-        'hapticEnabled': hapticEnabled,
-        'doubleOutRequired': doubleOutRequired,
-      };
+    'soundEnabled': soundEnabled,
+    'hapticEnabled': hapticEnabled,
+    'doubleOutRequired': doubleOutRequired,
+  };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
-        soundEnabled: json['soundEnabled'] as bool? ?? true,
-        hapticEnabled: json['hapticEnabled'] as bool? ?? true,
-        doubleOutRequired: json['doubleOutRequired'] as bool? ?? true,
-      );
+    soundEnabled: json['soundEnabled'] as bool? ?? true,
+    hapticEnabled: json['hapticEnabled'] as bool? ?? true,
+    doubleOutRequired: json['doubleOutRequired'] as bool? ?? true,
+  );
 }
 
 class SettingsNotifier extends Notifier<AppSettings> {
@@ -49,8 +48,10 @@ class SettingsNotifier extends Notifier<AppSettings> {
     return const AppSettings();
   }
 
-  void toggleSound() => _update(state.copyWith(soundEnabled: !state.soundEnabled));
-  void toggleHaptic() => _update(state.copyWith(hapticEnabled: !state.hapticEnabled));
+  void toggleSound() =>
+      _update(state.copyWith(soundEnabled: !state.soundEnabled));
+  void toggleHaptic() =>
+      _update(state.copyWith(hapticEnabled: !state.hapticEnabled));
   void toggleDoubleOut() =>
       _update(state.copyWith(doubleOutRequired: !state.doubleOutRequired));
 
@@ -60,5 +61,6 @@ class SettingsNotifier extends Notifier<AppSettings> {
   }
 }
 
-final settingsProvider =
-    NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
+final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(
+  SettingsNotifier.new,
+);

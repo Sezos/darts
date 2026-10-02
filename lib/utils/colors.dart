@@ -13,9 +13,30 @@ class BColors {
   Color get primaryGlow => const Color(0xFF00E896).withAlpha(70);
   Color get primaryBorder => const Color(0xFF00E896).withAlpha(55);
 
+  // Deeper mint stops, used only as the far end of primary gradients
+  Color get primaryDeep => const Color(0xFF00C278);
+  Color get primaryShade => const Color(0xFF00B87A);
+
+  /// Horizontal fill for primary buttons.
+  LinearGradient get primaryGradient =>
+      LinearGradient(colors: [primary, primaryDeep]);
+
+  /// Diagonal fill for the active scorecard and avatars.
+  LinearGradient get primaryGradientDiagonal => LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [primary, primaryShade],
+  );
+
   // Secondary accents
   Color get gold => const Color(0xFFF5A623);
   Color get orange => const Color(0xFFFF6B35);
+
+  // Destructive actions, losses, busts
+  Color get danger => const Color(0xFFF44336);
+
+  /// Text and icons placed on a primary (mint) fill.
+  Color get onPrimary => background;
 
   // Text
   Color get textPrimary => const Color(0xFFECFDF7);

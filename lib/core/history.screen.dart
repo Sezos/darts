@@ -1,9 +1,12 @@
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/dialogs.dart';
+import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/format.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -15,6 +18,16 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final matches = ref.watch(historyProvider);
     final user = ref.watch(userProvider);
+    // Newest first; only finished games (they have a winner).
+    final finished = matches.reversed.where((m) => m.winner != null).toList();
+
+    Future<bool> confirmDelete() => showConfirmDialog(
+      context,
+      title: "Тоглолтыг устгах уу?",
+      message: "Энэ тоглолт түүх болон статистикаас бүрмөсөн устна.",
+      confirmLabel: "Устгах",
+      destructive: true,
+    );
 
     // Collect unique players across all games for the stats header
     final allPlayers = <int, String>{};
@@ -35,7 +48,7 @@ class HistoryScreen extends ConsumerWidget {
           child: Divider(height: 1, color: BColors().border),
         ),
       ),
-      body: matches.isEmpty
+      body: finished.isEmpty
           ? _EmptyState()
           : Column(
               children: [
@@ -52,11 +65,15 @@ class HistoryScreen extends ConsumerWidget {
                       children: allPlayers.entries.map((e) {
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
-                          child: GestureDetector(
-                            onTap: () => context.push('/stats', extra: {
-                              'userId': e.key,
-                              'userName': e.value,
-                            }),
+                          child: Pressable(
+                            semanticLabel: "${e.value}: статистик",
+                            onTap: () => context.push(
+                              '/stats',
+                              extra: {
+                                'userId': e.key,
+                                'userName': e.value,
+                              },
+                            ),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -81,7 +98,9 @@ class HistoryScreen extends ConsumerWidget {
                                     ),
                                     child: Center(
                                       child: BText(
-                                        e.value[0].toUpperCase(),
+                                        e.value.isNotEmpty
+                                            ? e.value[0].toUpperCase()
+                                            : '?',
                                         size: .x2s,
                                         fontWeight: .w800,
                                         color: e.key == user.id
@@ -115,87 +134,62 @@ class HistoryScreen extends ConsumerWidget {
                 Expanded(
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
-                    itemCount: matches.length,
+                    itemCount: finished.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
-                      // Show newest first
-                      final realIndex = matches.length - 1 - index;
-                      final match = matches[realIndex];
-                      if (match.rounds.isEmpty) return const SizedBox.shrink();
-                      final isWin = match.rounds.last.user.id == user.id;
-                      final isParticipant =
-                          match.users.any((e) => e.id == user.id);
-                      final winner = match.rounds.last.user.name;
+                      final match = finished[index];
+                      final winnerUser = match.winner!;
+                      final isWin = winnerUser.id == user.id;
+                      final isParticipant = match.users.any(
+                        (e) => e.id == user.id,
+                      );
+                      final winner = winnerUser.name;
 
                       return Dismissible(
-                        key: Key('game_$realIndex'),
+                        // Keyed by the game, not its position, so deleting
+                        // one card never animates another.
+                        key: ObjectKey(match),
                         direction: DismissDirection.endToStart,
                         background: Container(
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.only(right: 20),
                           decoration: BoxDecoration(
-                            color: Colors.red.withAlpha(40),
+                            color: BColors().danger.withAlpha(40),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.red.withAlpha(60)),
+                            border: Border.all(
+                              color: BColors().danger.withAlpha(60),
+                            ),
                           ),
                           child: HugeIcon(
                             icon: HugeIcons.strokeRoundedDelete01,
-                            color: Colors.red,
+                            color: BColors().danger,
                             size: 22,
                           ),
                         ),
-                        confirmDismiss: (_) async {
-                          bool confirm = false;
-                          await showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              backgroundColor: BColors().surface,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: BorderSide(color: BColors().border),
-                              ),
-                              title: BText(
-                                "Устгах уу?",
-                                fontWeight: .w800,
-                              ),
-                              content: BComment(
-                                "Тоглолтыг бүрмөсөн устгана",
-                                color: BColors().textSecondary,
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => ctx.pop(),
-                                  child: BText(
-                                    "Болих",
-                                    color: BColors().textSecondary,
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    confirm = true;
-                                    ctx.pop();
-                                  },
-                                  child: BText(
-                                    "Устгах",
-                                    color: Colors.red,
-                                    fontWeight: .w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                          return confirm;
-                        },
+                        confirmDismiss: (_) => confirmDelete(),
                         onDismissed: (_) {
-                          ref
-                              .read(historyProvider.notifier)
-                              .deleteGame(realIndex);
+                          ref.read(historyProvider.notifier).deleteGame(match);
                         },
-                        child: _HistoryCard(
-                          match: match,
-                          isWin: isWin,
-                          isParticipant: isParticipant,
-                          winner: winner,
+                        // Swipe isn't reachable by screen readers; expose
+                        // delete as a custom action too.
+                        child: Semantics(
+                          customSemanticsActions: {
+                            const CustomSemanticsAction(
+                              label: "Устгах",
+                            ): () async {
+                              if (await confirmDelete()) {
+                                ref
+                                    .read(historyProvider.notifier)
+                                    .deleteGame(match);
+                              }
+                            },
+                          },
+                          child: _HistoryCard(
+                            match: match,
+                            isWin: isWin,
+                            isParticipant: isParticipant,
+                            winner: winner,
+                          ),
                         ),
                       );
                     },
@@ -221,7 +215,7 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resultColor = isWin ? BColors().primary : Colors.red;
+    final resultColor = isWin ? BColors().primary : BColors().danger;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -230,7 +224,9 @@ class _HistoryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isParticipant
-              ? (isWin ? BColors().primaryBorder : Colors.red.withAlpha(50))
+              ? (isWin
+                    ? BColors().primaryBorder
+                    : BColors().danger.withAlpha(50))
               : BColors().border,
         ),
       ),
@@ -244,15 +240,17 @@ class _HistoryCard extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isParticipant
-                  ? (isWin ? BColors().primaryDim : Colors.red.withAlpha(20))
+                  ? (isWin
+                        ? BColors().primaryDim
+                        : BColors().danger.withAlpha(20))
                   : BColors().elevated,
             ),
             child: Center(
               child: HugeIcon(
                 icon: isParticipant
                     ? (isWin
-                        ? HugeIcons.strokeRoundedAward01
-                        : HugeIcons.strokeRoundedSad01)
+                          ? HugeIcons.strokeRoundedAward01
+                          : HugeIcons.strokeRoundedSad01)
                     : HugeIcons.strokeRoundedDart,
                 color: isParticipant ? resultColor : BColors().textSecondary,
                 size: 20,
