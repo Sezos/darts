@@ -82,6 +82,13 @@ class HistoryNotifier extends _$HistoryNotifier {
     saveState();
   }
 
+  void deleteGame(int index) {
+    final list = [...state];
+    list.removeAt(index);
+    state = list;
+    saveState();
+  }
+
   void saveState([List<Game>? list]) {
     storage.write(key, (list ?? state).map((e) => e.toJson()).toList());
   }

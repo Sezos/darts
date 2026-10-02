@@ -1,14 +1,32 @@
 import 'package:flutter/material.dart';
 
 class BColors {
-  Color get lighter => Color(0xFF162E26);
-  Color get background => Color(0xFF10221C);
-  Color get primary => Color(0xFF13ECA4);
-  Color get border => Color.fromRGBO(95, 95, 95, 1);
+  // Backgrounds
+  Color get background => const Color(0xFF080F0C);
+  Color get surface => const Color(0xFF0D1F17);
+  Color get lighter => const Color(0xFF112318);
+  Color get elevated => const Color(0xFF1A3628);
+
+  // Primary accent — neon mint
+  Color get primary => const Color(0xFF00E896);
+  Color get primaryDim => const Color(0xFF00E896).withAlpha(25);
+  Color get primaryGlow => const Color(0xFF00E896).withAlpha(70);
+  Color get primaryBorder => const Color(0xFF00E896).withAlpha(55);
+
+  // Secondary accents
+  Color get gold => const Color(0xFFF5A623);
+  Color get orange => const Color(0xFFFF6B35);
+
+  // Text
+  Color get textPrimary => const Color(0xFFECFDF7);
+  Color get textSecondary => const Color(0xFF7AA896);
+
+  // Borders
+  Color get border => const Color(0xFF1D3D2D);
+  Color get borderSubtle => const Color(0xFF152B20);
 }
 
 extension HexColor on Color {
-  /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
   static Color fromHex(String? hexString) {
     if (hexString == null) return Colors.transparent;
     RegExp hexColorRegex = RegExp(

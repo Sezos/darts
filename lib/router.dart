@@ -4,6 +4,7 @@ import 'package:darts/core/homescreen.dart';
 import 'package:darts/core/players.screen.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/settings.screen.dart';
+import 'package:darts/core/stats.screen.dart';
 import 'package:go_router/go_router.dart';
 
 final router = GoRouter(
@@ -27,7 +28,17 @@ final router = GoRouter(
     ),
     GoRoute(
       path: "/history",
-      builder: (context, state) => HistoryScreen(),
+      builder: (context, state) => const HistoryScreen(),
+    ),
+    GoRoute(
+      path: "/stats",
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return StatsScreen(
+          userId: extra['userId'] as int,
+          userName: extra['userName'] as String,
+        );
+      },
     ),
   ],
 );

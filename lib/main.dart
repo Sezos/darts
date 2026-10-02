@@ -1,6 +1,8 @@
 import 'package:darts/router.dart';
+import 'package:darts/utils/ads.dart';
 import 'package:darts/utils/colors.dart';
 import 'package:device_preview/device_preview.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,15 +13,17 @@ import 'package:moon_design/moon_design.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
-
-  // Option A: initialize for a specific locale used by your app:
   await initializeDateFormatting('mn_MN', null);
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    // DeviceOrientation.portraitDown,
-    // DeviceOrientation.landscapeLeft,
-    // DeviceOrientation.landscapeRight,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // Firebase — requires GoogleService-Info.plist (iOS) and google-services.json (Android)
+  // See README setup steps below if not done yet.
+  try {
+    await Firebase.initializeApp();
+    await AdService.initialize();
+  } catch (_) {
+    // Firebase not configured yet — analytics and ads will be silent no-ops
+  }
 
   runApp(
     ProviderScope(
@@ -44,6 +48,8 @@ class _MyAppState extends ConsumerState<MyApp> {
     return MaterialApp.router(
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      // Wire analytics observer so screen_view events fire automatically
+      // (only active when Firebase is configured)
       theme: ThemeData.dark().copyWith(
         extensions: <ThemeExtension<dynamic>>[
           MoonTheme(
@@ -58,7 +64,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         appBarTheme: AppBarTheme(
           elevation: 0,
           leadingWidth: 56,
-          surfaceTintColor: Color.fromARGB(255, 27, 59, 48),
+          surfaceTintColor: const Color.fromARGB(255, 27, 59, 48),
           backgroundColor: BColors().background,
           systemOverlayStyle: SystemUiOverlayStyle(
             statusBarColor: BColors().background,
