@@ -1,23 +1,28 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Manages all ad logic.
-/// Uses TEST IDs by default — replace with real IDs before releasing.
-/// Real IDs: create an AdMob account at admob.google.com
 class AdService {
   AdService._();
 
   // ── Ad Unit IDs ────────────────────────────────────────────────────────────
-  // TODO: Replace these with your real AdMob unit IDs before release.
+  // Debug builds always use Google's test units: clicking real ads while
+  // developing is an AdMob policy violation.
 
   static String get _bannerUnitId {
-    if (Platform.isIOS) {
-      // Real iOS banner ID from AdMob console
-      return 'ca-app-pub-3940256099942544/2934735716'; // TEST ID
+    if (kDebugMode) {
+      return Platform.isIOS
+          ? 'ca-app-pub-3940256099942544/2934735716' // TEST (iOS)
+          : 'ca-app-pub-3940256099942544/6300978111'; // TEST (Android)
     }
-    return 'ca-app-pub-3940256099942544/6300978111'; // TEST ID (Android)
+    if (Platform.isIOS) {
+      return 'ca-app-pub-3416970123149038/9771487696'; // Дарцны оноо · Home banner
+    }
+    // TODO: no Android app in AdMob yet; create one and put its banner ID here.
+    return 'ca-app-pub-3940256099942544/6300978111'; // TEST (Android)
   }
 
   // ── Initialization ─────────────────────────────────────────────────────────
