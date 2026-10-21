@@ -100,7 +100,7 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               BText(
-                                "ДАРЦНЫ ОНОО",
+                                "ДАРТСНЫ ОНОО",
                                 fontWeight: .w900,
                                 size: .xl,
                                 letterSpacing: 2.5,
