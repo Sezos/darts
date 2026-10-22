@@ -21,8 +21,7 @@ class AdService {
     if (Platform.isIOS) {
       return 'ca-app-pub-3416970123149038/9771487696'; // Дарцны оноо · Home banner
     }
-    // TODO: no Android app in AdMob yet; create one and put its banner ID here.
-    return 'ca-app-pub-3940256099942544/6300978111'; // TEST (Android)
+    return 'ca-app-pub-3416970123149038/8650282600'; // Дартсны оноо (Android) · Home banner
   }
 
   // ── Initialization ─────────────────────────────────────────────────────────
