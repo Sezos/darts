@@ -1,40 +1,14 @@
+import 'package:darts/core/game/engine.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 
-/// Which ring of a segment was hit.
-enum DartType {
-  s(1),
-  d(2),
-  t(3)
-  ;
-
-  const DartType(this.multiplier);
-  final int multiplier;
-}
-
-/// What a single throw did to the game.
-enum ThrowResult {
-  /// Counted; the same player throws again.
-  scored,
-
-  /// Third dart counted; play passed to the next player.
-  turnOver,
-
-  /// Went over. The round is marked bust and waits for [X01Engine.endTurn].
-  bust,
-
-  /// Checked out. The winning round is already in [Game.rounds].
-  win,
-
-  /// Not accepted: the round is bust or the game is over.
-  ignored,
-}
+export 'package:darts/core/game/engine.dart';
 
 /// Rules and turn state for an x01 game (101 / 301 / 501 / 701).
 ///
 /// Mutates [game] in place: completed rounds are appended to [Game.rounds],
 /// and [current] holds the round in progress.
-class X01Engine {
+class X01Engine implements GameEngine {
   X01Engine(this.game, {this.doubleOut = true})
     : assert(game.users.isNotEmpty),
       current = Round(user: game.users.first) {
@@ -49,7 +23,9 @@ class X01Engine {
   // Game's default `rounds` is a const list; the engine appends to it.
   void _ensureGrowableRounds() => game.rounds = [...game.rounds];
 
+  @override
   final Game game;
+  @override
   Round current;
 
   /// Finishing dart must be a double (bull 50 counts). Read before each throw,
@@ -57,12 +33,16 @@ class X01Engine {
   bool doubleOut;
 
   bool _finished = false;
+  @override
   bool get isFinished => _finished;
 
+  @override
   User get player => current.user;
   int get playerIndex => game.users.indexWhere((u) => u.id == player.id);
 
+  @override
   bool get hasAnyThrow => game.rounds.isNotEmpty || current.dartsThrown > 0;
+  @override
   bool get canUndo => !_finished && hasAnyThrow;
 
   /// The current round has gone over and is waiting for [endTurn].
@@ -89,6 +69,7 @@ class X01Engine {
   Round? get lastRound => game.rounds.isEmpty ? null : game.rounds.last;
 
   /// Records one dart. [number] is 1–20, 25 for bull, or 0 for a miss.
+  @override
   ThrowResult throwDart(int number, DartType type) {
     if (_finished || current.bust || current.dartsThrown >= 3) {
       return ThrowResult.ignored;
@@ -127,6 +108,7 @@ class X01Engine {
 
   /// Ends the current round early (unthrown darts count as misses) or closes
   /// a bust round, and passes play to the next player.
+  @override
   void endTurn() {
     if (_finished) return;
     if (!current.bust) {
@@ -140,6 +122,7 @@ class X01Engine {
   /// Removes the most recent dart, stepping back into the previous player's
   /// round when the current one is empty. Returns false when there is
   /// nothing to undo.
+  @override
   bool undo() {
     if (!canUndo) return false;
     if (current.dartsThrown == 0) {

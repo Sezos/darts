@@ -41,20 +41,26 @@ class Analytics {
 
   // ── Game events ────────────────────────────────────────────────────────────
 
+  /// [mode] is "x01" or "cricket". [gameType] is the x01 starting score
+  /// ("501"), or "cricket".
   static Future<void> gameStarted({
-    required int gameType,
+    required String mode,
+    required String gameType,
     required int playerCount,
   }) => _log('game_started', {
-    'game_type': gameType.toString(),
+    'mode': mode,
+    'game_type': gameType,
     'player_count': playerCount,
   });
 
   static Future<void> gameCompleted({
-    required int gameType,
+    required String mode,
+    required String gameType,
     required int roundsPlayed,
     required bool currentUserWon,
   }) => _log('game_completed', {
-    'game_type': gameType.toString(),
+    'mode': mode,
+    'game_type': gameType,
     'rounds_played': roundsPlayed,
     'user_won': currentUserWon ? 1 : 0,
   });

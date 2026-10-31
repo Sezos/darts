@@ -13,9 +13,6 @@ formatter:
   trailing_commas: preserve
 
 analyzer:
-  enable-experiment:
-    - dot-shorthands
-
   errors:
     invalid_annotation_target: ignore
   exclude:

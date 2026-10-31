@@ -1,6 +1,6 @@
 ---
 name: Darts Score (Дарцны оноо)
-description: Dark, mint-lit x01 darts scorekeeper for phones on a pub table.
+description: Dark, mint-lit x01 and Cricket darts scorekeeper for phones on a pub table.
 colors:
   background: "#080F0C"
   surface: "#0D1F17"
@@ -81,7 +81,7 @@ components:
 
 A scoreboard you glance at between throws, often in a dim bar, with the phone lying on a table or propped against the oche. It uses one dark scheme on purpose: a near-black green background, and a single neon-mint accent that marks whose turn it is and what to press next. Everything else stays quiet so the remaining scores read from arm's length.
 
-The UI copy is in Mongolian. Darts jargon that players already use as-is stays in English: Single / Double / Triple, BUST, PPR, Bull.
+The UI copy is in Mongolian. Darts jargon that players already use as-is stays in English: Single / Double / Triple, BUST, PPR, MPR, Bull, Cricket. Cricket-mode strings live together in `lib/utils/cricket_strings.dart`.
 
 ## Colors
 
@@ -112,7 +112,7 @@ Manrope throughout, via the `BText` / `BComment` widgets with `TextSize` steps i
 - **Title (`l`, w800):** screen titles and dialog headings.
 - **Body (`m` 15pt, w700):** names, list rows, button labels.
 - **Label (`s` 13pt / `xs` 12pt):** section headers (uppercase, 1.5 tracking) and metadata.
-- **Caption (`x2s` 11pt):** PPR and the "+points" badges. **11pt is the floor;** nothing renders smaller.
+- **Caption (`x2s` 11pt):** PPR / MPR and the "+points" badges. **11pt is the floor;** nothing renders smaller.
 
 Text follows the OS text-size setting. Fixed-height containers (scorecards, keys) wrap their text in `FittedBox(fit: BoxFit.scaleDown)` so large text shrinks to fit instead of clipping.
 
@@ -152,13 +152,16 @@ Every tappable surface is built on it. It provides the button role, an accessibl
 ### Scorecard (signature)
 Shows the remaining points. The active player is filled with the mint gradient; on a bust the card flashes danger-red with "BUST!" for 650ms. Its screen-reader label reads the name, the points left, and whose turn it is.
 
+### Cricket board
+`CricketBoard` (`lib/core/cricket_board.dart`): one row per number (20 → 15, Bull), one column of marks per player, points on top. Two players sit either side of the numbers like a chalkboard; three or more read left to right after the numbers. The player on throw gets the mint header and a mint-tinted column. Marks are painted, not typed: `/`, `X`, and a circled X in mint once closed. A number every player has closed is struck through and dimmed, and so is its key.
+
 ## Do's and Don'ts
 
 ### Do:
 - Use `BColors()` tokens and the gradient getters.
 - Build controls on `Pressable`, and label every icon-only control.
 - Check `context.reduceMotion` before adding entrance animations or confetti.
-- Keep game rules in `X01Engine` (`lib/core/game/x01_engine.dart`), with tests, never in a widget.
+- Keep game rules in `X01Engine` / `CricketEngine` (`lib/core/game/`), with tests, never in a widget.
 
 ### Don't:
 - Use text below 11pt, or fixed heights that clip text when the system font size is large.

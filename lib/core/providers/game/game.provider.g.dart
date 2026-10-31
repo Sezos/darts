@@ -9,6 +9,7 @@ part of 'game.provider.dart';
 _Game _$GameFromJson(Map<String, dynamic> json) => _Game(
   date: DateTime.parse(json['date'] as String),
   startFrom: (json['startFrom'] as num).toInt(),
+  mode: $enumDecodeNullable(_$GameModeEnumMap, json['mode']) ?? GameMode.x01,
   users:
       (json['users'] as List<dynamic>?)
           ?.map((e) => User.fromJson(e as Map<String, dynamic>))
@@ -24,9 +25,12 @@ _Game _$GameFromJson(Map<String, dynamic> json) => _Game(
 Map<String, dynamic> _$GameToJson(_Game instance) => <String, dynamic>{
   'date': instance.date.toIso8601String(),
   'startFrom': instance.startFrom,
+  'mode': _$GameModeEnumMap[instance.mode]!,
   'users': instance.users,
   'rounds': instance.rounds,
 };
+
+const _$GameModeEnumMap = {GameMode.x01: 'x01', GameMode.cricket: 'cricket'};
 
 _Round _$RoundFromJson(Map<String, dynamic> json) => _Round(
   user: User.fromJson(json['user'] as Map<String, dynamic>),
@@ -34,6 +38,9 @@ _Round _$RoundFromJson(Map<String, dynamic> json) => _Round(
   dart2: (json['dart2'] as num?)?.toInt(),
   dart3: (json['dart3'] as num?)?.toInt(),
   bust: json['bust'] as bool? ?? false,
+  mult1: (json['mult1'] as num?)?.toInt(),
+  mult2: (json['mult2'] as num?)?.toInt(),
+  mult3: (json['mult3'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$RoundToJson(_Round instance) => <String, dynamic>{
@@ -42,6 +49,9 @@ Map<String, dynamic> _$RoundToJson(_Round instance) => <String, dynamic>{
   'dart2': instance.dart2,
   'dart3': instance.dart3,
   'bust': instance.bust,
+  'mult1': ?instance.mult1,
+  'mult2': ?instance.mult2,
+  'mult3': ?instance.mult3,
 };
 
 // **************************************************************************

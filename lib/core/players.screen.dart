@@ -4,6 +4,7 @@ import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/players/players.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/cricket_strings.dart';
 import 'package:darts/utils/dialogs.dart';
 import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/snackbar.dart';
@@ -23,6 +24,7 @@ class PlayersScreen extends ConsumerStatefulWidget {
 }
 
 class _PlayersScreenState extends ConsumerState<PlayersScreen> {
+  GameMode mode = GameMode.x01;
   int startCount = 301;
   List<User> playersToPlay = [];
   bool isRandom = false;
@@ -67,11 +69,22 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
                       // ── Game mode ──────────────────────────────────────────
                       _Section(
                         label: "Тоглоомын төрөл",
-                        child: _GameModeSelector(
-                          selected: startCount,
-                          onSelect: (v) => setState(() => startCount = v),
+                        child: _ModeSelector(
+                          selected: mode,
+                          onSelect: (m) => setState(() => mode = m),
                         ),
                       ),
+
+                      if (mode == GameMode.x01)
+                        _Section(
+                          label: CricketText.startScore,
+                          child: _GameModeSelector(
+                            selected: startCount,
+                            onSelect: (v) => setState(() => startCount = v),
+                          ),
+                        )
+                      else
+                        const _CricketRules(),
 
                       // ── Selected players ───────────────────────────────────
                       _Section(
@@ -106,9 +119,8 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
                               : ReorderableListView(
                                   buildDefaultDragHandles: false,
                                   scrollDirection: Axis.horizontal,
-                                  onReorder: (oldIndex, newIndex) {
+                                  onReorderItem: (oldIndex, newIndex) {
                                     setState(() {
-                                      if (newIndex > oldIndex) newIndex--;
                                       final item = playersToPlay.removeAt(
                                         oldIndex,
                                       );
@@ -247,7 +259,9 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
                             '/game',
                             extra: Game(
                               date: DateTime.now(),
-                              startFrom: startCount,
+                              // Cricket has no starting score.
+                              startFrom: mode == GameMode.x01 ? startCount : 0,
+                              mode: mode,
                               users: isRandom
                                   ? secureShuffled(playersToPlay)
                                   : [...playersToPlay],
@@ -345,6 +359,143 @@ class _Section extends StatelessWidget {
         ),
         child,
       ],
+    );
+  }
+}
+
+/// x01 or Cricket, as two cards side by side.
+class _ModeSelector extends StatelessWidget {
+  const _ModeSelector({required this.selected, required this.onSelect});
+  final GameMode selected;
+  final ValueChanged<GameMode> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      spacing: 10,
+      children: [
+        for (final (mode, title, detail) in const [
+          (GameMode.x01, CricketText.x01, CricketText.x01Detail),
+          (GameMode.cricket, CricketText.cricket, CricketText.cricketDetail),
+        ])
+          Expanded(
+            child: _ModeCard(
+              title: title,
+              detail: detail,
+              isSelected: selected == mode,
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onSelect(mode);
+              },
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ModeCard extends StatelessWidget {
+  const _ModeCard({
+    required this.title,
+    required this.detail,
+    required this.isSelected,
+    required this.onTap,
+  });
+  final String title;
+  final String detail;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Pressable(
+      selected: isSelected,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: context.reduceMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? BColors().primaryDim : BColors().lighter,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? BColors().primary : BColors().border,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          spacing: 10,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 2,
+                children: [
+                  BText(
+                    title,
+                    fontWeight: .w900,
+                    size: .l,
+                    color: isSelected
+                        ? BColors().primary
+                        : BColors().textPrimary,
+                  ),
+                  BComment(
+                    detail,
+                    color: BColors().textSecondary,
+                    size: .xs,
+                    maxLine: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            HugeIcon(
+              icon: isSelected
+                  ? HugeIcons.strokeRoundedCheckmarkCircle01
+                  : HugeIcons.strokeRoundedCircle,
+              color: isSelected ? BColors().primary : BColors().textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// How Cricket is played, in two sentences, shown when it is picked.
+class _CricketRules extends StatelessWidget {
+  const _CricketRules();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: BColors().lighter,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: BColors().border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10,
+        children: [
+          HugeIcon(
+            icon: HugeIcons.strokeRoundedInformationCircle,
+            color: BColors().primary,
+            size: 18,
+          ),
+          Expanded(
+            child: BComment(
+              CricketText.rules,
+              color: BColors().textSecondary,
+              size: .s,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:confetti/confetti.dart';
+import 'package:darts/core/cricket_board.dart';
+import 'package:darts/core/game/cricket_engine.dart';
 import 'package:darts/core/game/x01_engine.dart';
 import 'package:darts/core/helper/darts.helper.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
@@ -9,6 +11,7 @@ import 'package:darts/core/providers/settings/settings.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/utils/analytics.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/cricket_strings.dart';
 import 'package:darts/utils/format.dart';
 import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/rating.dart';
@@ -50,15 +53,25 @@ extension on DartType {
 
 class _FinalScore {
   final String name;
-  final int remaining;
-  const _FinalScore(this.name, this.remaining);
+
+  /// Points left (x01) or points scored (Cricket), ready to show.
+  final String value;
+  const _FinalScore(this.name, this.value);
 }
 
 enum HapticType { light, medium, heavy }
 
 class _GameScreenState extends ConsumerState<GameScreen> {
-  late final X01Engine engine;
+  late final GameEngine engine;
   DartType dartType = .s;
+
+  bool get _isCricket => widget.game.isCricket;
+  X01Engine get _x01 => engine as X01Engine;
+  CricketEngine get _cricket => engine as CricketEngine;
+
+  /// The `game_type` analytics value: "501", or "cricket".
+  String get _gameType =>
+      _isCricket ? GameMode.cricket.name : '${widget.game.startFrom}';
 
   // Bust: the round shows "BUST!" briefly, then play passes on.
   static const _bustHold = Duration(milliseconds: 650);
@@ -83,15 +96,22 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       duration: const Duration(seconds: 3),
     );
 
-    final doubleOut = ref.read(settingsProvider).doubleOutRequired;
     final resume = widget.resumeRound;
-    engine = resume == null
-        ? X01Engine(widget.game, doubleOut: doubleOut)
-        : X01Engine.resume(widget.game, resume, doubleOut: doubleOut);
+    if (_isCricket) {
+      engine = resume == null
+          ? CricketEngine(widget.game)
+          : CricketEngine.resume(widget.game, resume);
+    } else {
+      final doubleOut = ref.read(settingsProvider).doubleOutRequired;
+      engine = resume == null
+          ? X01Engine(widget.game, doubleOut: doubleOut)
+          : X01Engine.resume(widget.game, resume, doubleOut: doubleOut);
+    }
 
     if (resume == null) {
       Analytics.gameStarted(
-        gameType: widget.game.startFrom,
+        mode: widget.game.mode.name,
+        gameType: _gameType,
         playerCount: widget.game.users.length,
       );
     }
@@ -148,14 +168,18 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     }
   }
 
-  String _suggestionFor(int remaining) =>
-      engine.doubleOut ? suggestDartsString(remaining) : '';
+  /// x01 checkout hint for the player on throw; empty for Cricket.
+  String get _suggestion {
+    if (engine case X01Engine x01 when x01.doubleOut) {
+      return suggestDartsString(x01.remaining(x01.player));
+    }
+    return '';
+  }
 
   /// Logs once per turn, when a player starts their round on a checkout.
   void _logSuggestionForTurn() {
-    final remaining = engine.remaining(engine.player);
-    if (_suggestionFor(remaining).isNotEmpty) {
-      Analytics.checkoutSuggestionShown(score: remaining);
+    if (engine case X01Engine x01 when _suggestion.isNotEmpty) {
+      Analytics.checkoutSuggestionShown(score: x01.remaining(x01.player));
     }
   }
 
@@ -168,7 +192,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   void onTapNumber(int number, [DartType? thrownDartType]) {
     final type = thrownDartType ?? dartType;
-    engine.doubleOut = ref.read(settingsProvider).doubleOutRequired;
+    if (engine case X01Engine x01) {
+      x01.doubleOut = ref.read(settingsProvider).doubleOutRequired;
+    }
     final result = engine.throwDart(number, type);
     if (result == ThrowResult.ignored) return;
 
@@ -237,7 +263,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     _haptic(HapticType.heavy);
 
     Analytics.gameCompleted(
-      gameType: game.startFrom,
+      mode: game.mode.name,
+      gameType: _gameType,
       roundsPlayed: game.rounds.length,
       currentUserWon: winner.id == ref.read(userProvider).id,
     );
@@ -245,13 +272,20 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     showGameFinishedDialog(
       winnerName: winner.name,
-      finalScores: game.users
-          .map((u) => _FinalScore(u.name, engine.remaining(u)))
-          .toList(),
+      finalScores: [
+        for (final u in game.users)
+          _FinalScore(
+            u.name,
+            _isCricket
+                ? CricketText.points(_cricket.points(u))
+                : '${_x01.remaining(u)}',
+          ),
+      ],
       onNewGame: () => context.pushReplacement(
         "/game",
         extra: Game(
           startFrom: game.startFrom,
+          mode: game.mode,
           date: DateTime.now(),
           users: X01Engine.rotatedForRematch(game.users),
         ),
@@ -346,7 +380,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                               ),
                             ),
                             BText(
-                              e.remaining.toString(),
+                              e.value,
                               fontWeight: .w800,
                               color: BColors().textPrimary,
                             ),
@@ -391,14 +425,15 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   // ─── Build ────────────────────────────────────────────────────────────────
 
   _CardData _cardData(User player) {
-    final last = engine.lastRound;
+    final x01 = _x01;
+    final last = x01.lastRound;
     return _CardData(
       name: player.name,
-      remaining: engine.remaining(player),
-      ppr: engine.ppr(player).toStringAsFixed(1),
+      remaining: x01.remaining(player),
+      ppr: x01.ppr(player).toStringAsFixed(1),
       lastScore: last != null && last.user.id == player.id ? last.total : null,
-      isCurrent: player.id == engine.player.id && !engine.isFinished,
-      isBusting: engine.isBust && player.id == engine.player.id,
+      isCurrent: player.id == x01.player.id && !x01.isFinished,
+      isBusting: x01.isBust && player.id == x01.player.id,
     );
   }
 
@@ -412,7 +447,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       appBar: isPortrait ? _buildAppBar() : null,
       body: Stack(
         children: [
-          isPortrait ? _portrait() : _landscape(),
+          switch ((isPortrait, _isCricket)) {
+            (true, false) => _portrait(),
+            (false, false) => _landscape(),
+            (true, true) => _cricketPortrait(),
+            (false, true) => _cricketLandscape(),
+          },
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -449,7 +489,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               border: Border.all(color: BColors().primaryBorder),
             ),
             child: BText(
-              "${engine.game.startFrom}",
+              engine.game.typeLabel,
               color: BColors().primary,
               fontWeight: .w800,
               size: .s,
@@ -478,7 +518,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   Widget _portrait() {
     final size = MediaQuery.sizeOf(context);
     final cardHeight = (size.height * 0.13).clamp(90.0, 130.0);
-    final suggestion = _suggestionFor(engine.remaining(engine.player));
+    final suggestion = _suggestion;
     // Narrow phones (iPhone SE) get 5 columns so keys stay ≥44pt.
     final columns = size.width < 360 ? 5 : 7;
 
@@ -762,6 +802,111 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     );
   }
 
+  // ─── Cricket ──────────────────────────────────────────────────────────────
+
+  Widget _cricketPortrait() {
+    final cricket = _cricket;
+    final height = MediaQuery.sizeOf(context).height;
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+          child: Column(
+            children: [
+              Expanded(child: CricketBoard(engine: cricket)),
+              const SizedBox(height: 8),
+              _ThrowDisplay(round: cricket.current, cricket: true),
+              const SizedBox(height: 8),
+              _DartTypeSelector(
+                selected: dartType,
+                onSelect: (t) => setState(() => dartType = t),
+              ),
+              const SizedBox(height: 8),
+              _CricketKeys(
+                engine: cricket,
+                dartType: dartType,
+                // Short phones (iPhone SE) give the board more room.
+                keyHeight: height < 700 ? 48 : 56,
+                onTap: onTapNumber,
+              ),
+              const SizedBox(height: 8),
+              _ControlsRow(
+                canGoBack: engine.canUndo,
+                onBack: onTapBack,
+                onMiss: () => onTapNumber(0),
+                onForward: onTapForward,
+              ),
+              SizedBox(height: MediaQuery.paddingOf(context).bottom + 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Board on the left, input on the right.
+  Widget _cricketLandscape() {
+    final cricket = _cricket;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          spacing: 10,
+          children: [
+            Expanded(
+              flex: 11,
+              child: CricketBoard(engine: cricket, compact: true),
+            ),
+            Expanded(
+              flex: 9,
+              child: Column(
+                spacing: 6,
+                children: [
+                  Row(
+                    spacing: 6,
+                    children: [
+                      IconTile(
+                        icon: HugeIcons.strokeRoundedCancel01,
+                        label: "Тоглолтоос гарах",
+                        onTap: () => context.pop(),
+                      ),
+                      Expanded(
+                        child: _ThrowDisplay(
+                          round: cricket.current,
+                          cricket: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                  _DartTypeSelector(
+                    selected: dartType,
+                    onSelect: (t) => setState(() => dartType = t),
+                  ),
+                  Expanded(
+                    child: _CricketKeys(
+                      engine: cricket,
+                      dartType: dartType,
+                      onTap: onTapNumber,
+                    ),
+                  ),
+                  _ControlsRow(
+                    canGoBack: engine.canUndo,
+                    onBack: onTapBack,
+                    onMiss: () => onTapNumber(0),
+                    onForward: onTapForward,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _keyLabel(String label, {String? sublabel, Color? color}) {
     return FittedBox(
       fit: BoxFit.scaleDown,
@@ -961,8 +1106,11 @@ class _ScoreCard extends StatelessWidget {
 // ─── Throw display ──────────────────────────────────────────────────────────
 
 class _ThrowDisplay extends StatelessWidget {
-  const _ThrowDisplay({required this.round});
+  const _ThrowDisplay({required this.round, this.cricket = false});
   final Round round;
+
+  /// Darts are segments with rings ("T20"), not points.
+  final bool cricket;
 
   @override
   Widget build(BuildContext context) {
@@ -975,11 +1123,17 @@ class _ThrowDisplay extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: _DartCell(index: 0, round: round)),
+          Expanded(
+            child: _DartCell(index: 0, round: round, cricket: cricket),
+          ),
           const _Divider(),
-          Expanded(child: _DartCell(index: 1, round: round)),
+          Expanded(
+            child: _DartCell(index: 1, round: round, cricket: cricket),
+          ),
           const _Divider(),
-          Expanded(child: _DartCell(index: 2, round: round)),
+          Expanded(
+            child: _DartCell(index: 2, round: round, cricket: cricket),
+          ),
         ],
       ),
     );
@@ -1005,10 +1159,12 @@ class _DartCell extends StatelessWidget {
     required this.index,
     required this.round,
     this.compact = false,
+    this.cricket = false,
   });
   final int index;
   final Round round;
   final bool compact;
+  final bool cricket;
 
   @override
   Widget build(BuildContext context) {
@@ -1032,8 +1188,13 @@ class _DartCell extends StatelessWidget {
       );
     }
 
+    final label = value == 0
+        ? "Алдсан"
+        : cricket
+        ? CricketText.dartLabel(value, round.mults[index])
+        : value.toString();
     Widget text = BText(
-      value == 0 ? "Алдсан" : value.toString(),
+      label,
       fontWeight: compact ? .w700 : .w800,
       size: compact ? .s : .l,
       color: value == 0
@@ -1043,12 +1204,12 @@ class _DartCell extends StatelessWidget {
     );
     if (!compact && !context.reduceMotion) {
       text = text
-          .animate(key: ValueKey('dart_${index}_$value'))
+          .animate(key: ValueKey('dart_${index}_$label'))
           .fadeIn(duration: 150.ms)
           .scale(begin: const Offset(0.7, 0.7), duration: 150.ms);
     }
     return Semantics(
-      label: "$ordinal: ${value == 0 ? 'алдсан' : value}",
+      label: "$ordinal: ${value == 0 ? 'алдсан' : label}",
       excludeSemantics: true,
       child: Center(
         child: FittedBox(fit: BoxFit.scaleDown, child: text),
@@ -1161,6 +1322,111 @@ class _NumberButton extends StatelessWidget {
               fontWeight: .w700,
               size: .m,
               color: dartType.color,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 15–20 and bull, in board order. A triple bull doesn't exist, so the bull
+/// key is disabled while Triple is selected. Numbers every player has
+/// closed are dimmed: a dart there still counts as thrown, but scores
+/// nothing.
+class _CricketKeys extends StatelessWidget {
+  const _CricketKeys({
+    required this.engine,
+    required this.dartType,
+    required this.onTap,
+    this.keyHeight,
+  });
+  final CricketEngine engine;
+  final DartType dartType;
+  final void Function(int) onTap;
+
+  /// Fixed key height; null fills the space given, split between the rows.
+  final double? keyHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget key(int number, {int flex = 1}) {
+      final bull = number == 25;
+      return Expanded(
+        flex: flex,
+        child: _CricketKey(
+          label: bull ? CricketText.bullKeyLabel(dartType) : '$number',
+          semanticLabel:
+              "${dartType.label} ${bull ? CricketText.bull : number}",
+          color: dartType.color,
+          dimmed: engine.isDead(number),
+          onTap: bull && dartType == .t ? null : () => onTap(number),
+        ),
+      );
+    }
+
+    final rows = [
+      [
+        for (final n in const [20, 19, 18, 17]) key(n),
+      ],
+      [key(16), key(15), key(25, flex: 2)],
+    ];
+    return Column(
+      spacing: 6,
+      children: [
+        for (final keys in rows)
+          if (keyHeight case final height?)
+            SizedBox(height: height, child: _row(keys))
+          else
+            Expanded(child: _row(keys)),
+      ],
+    );
+  }
+
+  Widget _row(List<Widget> keys) => Row(
+    spacing: 6,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: keys,
+  );
+}
+
+class _CricketKey extends StatelessWidget {
+  const _CricketKey({
+    required this.label,
+    required this.semanticLabel,
+    required this.color,
+    required this.dimmed,
+    required this.onTap,
+  });
+  final String label;
+  final String semanticLabel;
+  final Color color;
+  final bool dimmed;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final faded = dimmed || onTap == null;
+    return Pressable(
+      onTap: onTap,
+      minSize: 0,
+      semanticLabel: semanticLabel,
+      child: Container(
+        decoration: BoxDecoration(
+          color: faded ? BColors().surface : BColors().lighter,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: faded ? BColors().borderSubtle : BColors().border,
+          ),
+        ),
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: BText(
+              label,
+              fontWeight: .w800,
+              size: .x2l,
+              color: faded ? color.withAlpha(90) : color,
             ),
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/cricket_strings.dart';
 import 'package:darts/utils/dialogs.dart';
 import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/format.dart';
@@ -310,7 +311,7 @@ class _HistoryCard extends StatelessWidget {
               border: Border.all(color: BColors().primaryBorder),
             ),
             child: BText(
-              match.startFrom.toString(),
+              match.typeLabel,
               color: BColors().primary,
               fontWeight: .w800,
               size: .s,

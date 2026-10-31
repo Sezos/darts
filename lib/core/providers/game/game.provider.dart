@@ -5,20 +5,30 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'game.provider.g.dart';
 part 'game.provider.freezed.dart';
 
+/// Rules a game is played under.
+enum GameMode { x01, cricket }
+
 @unfreezed
 abstract class Game with _$Game {
   Game._();
 
   factory Game({
     required DateTime date,
+
+    /// x01 starting score (101–701). Cricket games save 0.
     required int startFrom,
+
+    /// Games saved before Cricket existed have no mode and load as x01.
+    @Default(GameMode.x01) GameMode mode,
     @Default(<User>[]) List<User> users,
     @Default(<Round>[]) List<Round> rounds,
   }) = _Game;
 
   factory Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);
 
-  /// For a finished game, the player whose round checked out.
+  bool get isCricket => mode == GameMode.cricket;
+
+  /// For a finished game, the player whose round won it.
   /// Saved games always end on the winning round.
   User? get winner => rounds.isEmpty ? null : rounds.last.user;
 }
@@ -29,6 +39,9 @@ abstract class Round with _$Round {
 
   factory Round({
     required User user,
+
+    /// x01: the points each dart scored. Cricket: the segment hit (15–20, or
+    /// 25 for bull), or 0 for a miss or any other number.
     int? dart1,
     int? dart2,
     int? dart3,
@@ -36,15 +49,23 @@ abstract class Round with _$Round {
     /// The round went over (or left an unfinishable 1). Its darts stay
     /// recorded so undo can restore them, but it scores nothing.
     @Default(false) bool bust,
+
+    /// Cricket only: each dart's ring (1 single, 2 double, 3 triple), null
+    /// for a miss. Left out of x01 saves.
+    @JsonKey(includeIfNull: false) int? mult1,
+    @JsonKey(includeIfNull: false) int? mult2,
+    @JsonKey(includeIfNull: false) int? mult3,
   }) = _Round;
 
   factory Round.fromJson(Map<String, dynamic> json) => _$RoundFromJson(json);
 
   List<int?> get darts => [dart1, dart2, dart3];
 
+  List<int?> get mults => [mult1, mult2, mult3];
+
   int get dartsThrown => darts.where((d) => d != null).length;
 
-  /// Sum of the darts thrown, ignoring bust.
+  /// x01: sum of the darts thrown, ignoring bust. Meaningless for Cricket.
   int get rawTotal => (dart1 ?? 0) + (dart2 ?? 0) + (dart3 ?? 0);
 
   /// Points this round takes off the player's remaining score.
@@ -83,12 +104,13 @@ class HistoryNotifier extends _$HistoryNotifier {
   }
 }
 
-/// Average points per round for [userId] across saved games, or "-".
+/// Average points per round for [userId] across saved x01 games, or "-".
 String averagePpr(List<Game> games, int userId) {
   final scores = [
     for (final g in games)
-      for (final r in g.rounds)
-        if (r.user.id == userId) r.total,
+      if (g.mode == GameMode.x01)
+        for (final r in g.rounds)
+          if (r.user.id == userId) r.total,
   ];
   if (scores.isEmpty) return "-";
   return (scores.reduce((a, b) => a + b) / scores.length).toStringAsFixed(1);

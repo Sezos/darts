@@ -1,5 +1,7 @@
+import 'package:darts/core/game/cricket_engine.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/cricket_strings.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,7 +61,9 @@ class StatsScreen extends ConsumerWidget {
     final losses = myGames.length - wins;
     final winRate = (wins / myGames.length * 100).toStringAsFixed(0);
 
-    final myRounds = myGames.expand(
+    // Points-based stats only make sense for x01.
+    final x01Games = myGames.where((g) => g.mode == GameMode.x01).toList();
+    final myRounds = x01Games.expand(
       (g) => g.rounds.where((r) => r.user.id == userId),
     );
     final roundScores = myRounds.map((r) => r.total).toList();
@@ -71,6 +75,21 @@ class StatsScreen extends ConsumerWidget {
         ? '-'
         : roundScores.reduce((a, b) => a > b ? a : b).toString();
     final totalDarts = myRounds.fold(0, (n, r) => n + r.dartsThrown);
+
+    // Cricket: marks that counted in each of the player's rounds.
+    final cricketGames = myGames.where((g) => g.isCricket).toList();
+    final roundMarks = [
+      for (final g in cricketGames)
+        for (final (id, marks) in CricketEngine.countedMarksPerRound(g))
+          if (id == userId) marks,
+    ];
+    final avgMpr = roundMarks.isEmpty
+        ? '-'
+        : (roundMarks.reduce((a, b) => a + b) / roundMarks.length)
+              .toStringAsFixed(2);
+    final bestMarks = roundMarks.isEmpty
+        ? '-'
+        : roundMarks.reduce((a, b) => a > b ? a : b).toString();
 
     // Opponent breakdown
     final opponentMap = <String, _OpponentRecord>{};
@@ -186,25 +205,50 @@ class StatsScreen extends ConsumerWidget {
               ],
             ),
 
-            // Performance stats
-            _SectionHeader(label: "Гүйцэтгэл"),
-            Row(
-              spacing: 10,
-              children: [
-                Expanded(
-                  child: _StatTile(label: "Дундаж PPR", value: avgPPR),
-                ),
-                Expanded(
-                  child: _StatTile(label: "Шилдэг раунд", value: bestRound),
-                ),
-                Expanded(
-                  child: _StatTile(
-                    label: "Нийт дарт",
-                    value: totalDarts.toString(),
+            // Performance stats, per mode
+            if (x01Games.isNotEmpty) ...[
+              _SectionHeader(label: CricketText.x01Performance),
+              Row(
+                spacing: 10,
+                children: [
+                  Expanded(
+                    child: _StatTile(label: "Дундаж PPR", value: avgPPR),
                   ),
-                ),
-              ],
-            ),
+                  Expanded(
+                    child: _StatTile(label: "Шилдэг раунд", value: bestRound),
+                  ),
+                  Expanded(
+                    child: _StatTile(
+                      label: "Нийт дарт",
+                      value: totalDarts.toString(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (cricketGames.isNotEmpty) ...[
+              _SectionHeader(label: CricketText.cricketPerformance),
+              Row(
+                spacing: 10,
+                children: [
+                  Expanded(
+                    child: _StatTile(label: CricketText.avgMpr, value: avgMpr),
+                  ),
+                  Expanded(
+                    child: _StatTile(
+                      label: CricketText.bestMarks,
+                      value: bestMarks,
+                    ),
+                  ),
+                  Expanded(
+                    child: _StatTile(
+                      label: CricketText.games,
+                      value: cricketGames.length.toString(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
 
             // Opponent breakdown
             if (opponentMap.isNotEmpty) ...[

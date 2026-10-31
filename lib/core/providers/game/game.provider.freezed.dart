@@ -15,7 +15,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Game {
 
- DateTime get date; set date(DateTime value); int get startFrom; set startFrom(int value); List<User> get users; set users(List<User> value); List<Round> get rounds; set rounds(List<Round> value);
+ DateTime get date; set date(DateTime value);/// x01 starting score (101–701). Cricket games save 0.
+ int get startFrom;/// x01 starting score (101–701). Cricket games save 0.
+ set startFrom(int value);/// Games saved before Cricket existed have no mode and load as x01.
+ GameMode get mode;/// Games saved before Cricket existed have no mode and load as x01.
+ set mode(GameMode value); List<User> get users; set users(List<User> value); List<Round> get rounds; set rounds(List<Round> value);
 /// Create a copy of Game
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,7 +34,7 @@ $GameCopyWith<Game> get copyWith => _$GameCopyWithImpl<Game>(this as Game, _$ide
 
 @override
 String toString() {
-  return 'Game(date: $date, startFrom: $startFrom, users: $users, rounds: $rounds)';
+  return 'Game(date: $date, startFrom: $startFrom, mode: $mode, users: $users, rounds: $rounds)';
 }
 
 
@@ -41,7 +45,7 @@ abstract mixin class $GameCopyWith<$Res>  {
   factory $GameCopyWith(Game value, $Res Function(Game) _then) = _$GameCopyWithImpl;
 @useResult
 $Res call({
- DateTime date, int startFrom, List<User> users, List<Round> rounds
+ DateTime date, int startFrom, GameMode mode, List<User> users, List<Round> rounds
 });
 
 
@@ -58,11 +62,12 @@ class _$GameCopyWithImpl<$Res>
 
 /// Create a copy of Game
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? date = null,Object? startFrom = null,Object? users = null,Object? rounds = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? date = null,Object? startFrom = null,Object? mode = null,Object? users = null,Object? rounds = null,}) {
   return _then(_self.copyWith(
 date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,startFrom: null == startFrom ? _self.startFrom : startFrom // ignore: cast_nullable_to_non_nullable
-as int,users: null == users ? _self.users : users // ignore: cast_nullable_to_non_nullable
+as int,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
+as GameMode,users: null == users ? _self.users : users // ignore: cast_nullable_to_non_nullable
 as List<User>,rounds: null == rounds ? _self.rounds : rounds // ignore: cast_nullable_to_non_nullable
 as List<Round>,
   ));
@@ -149,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime date,  int startFrom,  List<User> users,  List<Round> rounds)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime date,  int startFrom,  GameMode mode,  List<User> users,  List<Round> rounds)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Game() when $default != null:
-return $default(_that.date,_that.startFrom,_that.users,_that.rounds);case _:
+return $default(_that.date,_that.startFrom,_that.mode,_that.users,_that.rounds);case _:
   return orElse();
 
 }
@@ -170,10 +175,10 @@ return $default(_that.date,_that.startFrom,_that.users,_that.rounds);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime date,  int startFrom,  List<User> users,  List<Round> rounds)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime date,  int startFrom,  GameMode mode,  List<User> users,  List<Round> rounds)  $default,) {final _that = this;
 switch (_that) {
 case _Game():
-return $default(_that.date,_that.startFrom,_that.users,_that.rounds);case _:
+return $default(_that.date,_that.startFrom,_that.mode,_that.users,_that.rounds);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -190,10 +195,10 @@ return $default(_that.date,_that.startFrom,_that.users,_that.rounds);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime date,  int startFrom,  List<User> users,  List<Round> rounds)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime date,  int startFrom,  GameMode mode,  List<User> users,  List<Round> rounds)?  $default,) {final _that = this;
 switch (_that) {
 case _Game() when $default != null:
-return $default(_that.date,_that.startFrom,_that.users,_that.rounds);case _:
+return $default(_that.date,_that.startFrom,_that.mode,_that.users,_that.rounds);case _:
   return null;
 
 }
@@ -205,11 +210,14 @@ return $default(_that.date,_that.startFrom,_that.users,_that.rounds);case _:
 @JsonSerializable()
 
 class _Game extends Game {
-   _Game({required this.date, required this.startFrom, this.users = const <User>[], this.rounds = const <Round>[]}): super._();
+   _Game({required this.date, required this.startFrom, this.mode = GameMode.x01, this.users = const <User>[], this.rounds = const <Round>[]}): super._();
   factory _Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);
 
 @override  DateTime date;
+/// x01 starting score (101–701). Cricket games save 0.
 @override  int startFrom;
+/// Games saved before Cricket existed have no mode and load as x01.
+@override@JsonKey()  GameMode mode;
 @override@JsonKey()  List<User> users;
 @override@JsonKey()  List<Round> rounds;
 
@@ -228,7 +236,7 @@ Map<String, dynamic> toJson() {
 
 @override
 String toString() {
-  return 'Game(date: $date, startFrom: $startFrom, users: $users, rounds: $rounds)';
+  return 'Game(date: $date, startFrom: $startFrom, mode: $mode, users: $users, rounds: $rounds)';
 }
 
 
@@ -239,7 +247,7 @@ abstract mixin class _$GameCopyWith<$Res> implements $GameCopyWith<$Res> {
   factory _$GameCopyWith(_Game value, $Res Function(_Game) _then) = __$GameCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime date, int startFrom, List<User> users, List<Round> rounds
+ DateTime date, int startFrom, GameMode mode, List<User> users, List<Round> rounds
 });
 
 
@@ -256,11 +264,12 @@ class __$GameCopyWithImpl<$Res>
 
 /// Create a copy of Game
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? date = null,Object? startFrom = null,Object? users = null,Object? rounds = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? date = null,Object? startFrom = null,Object? mode = null,Object? users = null,Object? rounds = null,}) {
   return _then(_Game(
 date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,startFrom: null == startFrom ? _self.startFrom : startFrom // ignore: cast_nullable_to_non_nullable
-as int,users: null == users ? _self.users : users // ignore: cast_nullable_to_non_nullable
+as int,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
+as GameMode,users: null == users ? _self.users : users // ignore: cast_nullable_to_non_nullable
 as List<User>,rounds: null == rounds ? _self.rounds : rounds // ignore: cast_nullable_to_non_nullable
 as List<Round>,
   ));
@@ -273,11 +282,19 @@ as List<Round>,
 /// @nodoc
 mixin _$Round {
 
- User get user; set user(User value); int? get dart1; set dart1(int? value); int? get dart2; set dart2(int? value); int? get dart3; set dart3(int? value);/// The round went over (or left an unfinishable 1). Its darts stay
+ User get user; set user(User value);/// x01: the points each dart scored. Cricket: the segment hit (15–20, or
+/// 25 for bull), or 0 for a miss or any other number.
+ int? get dart1;/// x01: the points each dart scored. Cricket: the segment hit (15–20, or
+/// 25 for bull), or 0 for a miss or any other number.
+ set dart1(int? value); int? get dart2; set dart2(int? value); int? get dart3; set dart3(int? value);/// The round went over (or left an unfinishable 1). Its darts stay
 /// recorded so undo can restore them, but it scores nothing.
  bool get bust;/// The round went over (or left an unfinishable 1). Its darts stay
 /// recorded so undo can restore them, but it scores nothing.
- set bust(bool value);
+ set bust(bool value);/// Cricket only: each dart's ring (1 single, 2 double, 3 triple), null
+/// for a miss. Left out of x01 saves.
+@JsonKey(includeIfNull: false) int? get mult1;/// Cricket only: each dart's ring (1 single, 2 double, 3 triple), null
+/// for a miss. Left out of x01 saves.
+@JsonKey(includeIfNull: false) set mult1(int? value);@JsonKey(includeIfNull: false) int? get mult2;@JsonKey(includeIfNull: false) set mult2(int? value);@JsonKey(includeIfNull: false) int? get mult3;@JsonKey(includeIfNull: false) set mult3(int? value);
 /// Create a copy of Round
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -292,7 +309,7 @@ $RoundCopyWith<Round> get copyWith => _$RoundCopyWithImpl<Round>(this as Round, 
 
 @override
 String toString() {
-  return 'Round(user: $user, dart1: $dart1, dart2: $dart2, dart3: $dart3, bust: $bust)';
+  return 'Round(user: $user, dart1: $dart1, dart2: $dart2, dart3: $dart3, bust: $bust, mult1: $mult1, mult2: $mult2, mult3: $mult3)';
 }
 
 
@@ -303,7 +320,7 @@ abstract mixin class $RoundCopyWith<$Res>  {
   factory $RoundCopyWith(Round value, $Res Function(Round) _then) = _$RoundCopyWithImpl;
 @useResult
 $Res call({
- User user, int? dart1, int? dart2, int? dart3, bool bust
+ User user, int? dart1, int? dart2, int? dart3, bool bust,@JsonKey(includeIfNull: false) int? mult1,@JsonKey(includeIfNull: false) int? mult2,@JsonKey(includeIfNull: false) int? mult3
 });
 
 
@@ -320,14 +337,17 @@ class _$RoundCopyWithImpl<$Res>
 
 /// Create a copy of Round
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? user = null,Object? dart1 = freezed,Object? dart2 = freezed,Object? dart3 = freezed,Object? bust = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? user = null,Object? dart1 = freezed,Object? dart2 = freezed,Object? dart3 = freezed,Object? bust = null,Object? mult1 = freezed,Object? mult2 = freezed,Object? mult3 = freezed,}) {
   return _then(_self.copyWith(
 user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as User,dart1: freezed == dart1 ? _self.dart1 : dart1 // ignore: cast_nullable_to_non_nullable
 as int?,dart2: freezed == dart2 ? _self.dart2 : dart2 // ignore: cast_nullable_to_non_nullable
 as int?,dart3: freezed == dart3 ? _self.dart3 : dart3 // ignore: cast_nullable_to_non_nullable
 as int?,bust: null == bust ? _self.bust : bust // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,mult1: freezed == mult1 ? _self.mult1 : mult1 // ignore: cast_nullable_to_non_nullable
+as int?,mult2: freezed == mult2 ? _self.mult2 : mult2 // ignore: cast_nullable_to_non_nullable
+as int?,mult3: freezed == mult3 ? _self.mult3 : mult3 // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 /// Create a copy of Round
@@ -421,10 +441,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( User user,  int? dart1,  int? dart2,  int? dart3,  bool bust)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( User user,  int? dart1,  int? dart2,  int? dart3,  bool bust, @JsonKey(includeIfNull: false)  int? mult1, @JsonKey(includeIfNull: false)  int? mult2, @JsonKey(includeIfNull: false)  int? mult3)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Round() when $default != null:
-return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust);case _:
+return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust,_that.mult1,_that.mult2,_that.mult3);case _:
   return orElse();
 
 }
@@ -442,10 +462,10 @@ return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( User user,  int? dart1,  int? dart2,  int? dart3,  bool bust)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( User user,  int? dart1,  int? dart2,  int? dart3,  bool bust, @JsonKey(includeIfNull: false)  int? mult1, @JsonKey(includeIfNull: false)  int? mult2, @JsonKey(includeIfNull: false)  int? mult3)  $default,) {final _that = this;
 switch (_that) {
 case _Round():
-return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust);case _:
+return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust,_that.mult1,_that.mult2,_that.mult3);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -462,10 +482,10 @@ return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( User user,  int? dart1,  int? dart2,  int? dart3,  bool bust)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( User user,  int? dart1,  int? dart2,  int? dart3,  bool bust, @JsonKey(includeIfNull: false)  int? mult1, @JsonKey(includeIfNull: false)  int? mult2, @JsonKey(includeIfNull: false)  int? mult3)?  $default,) {final _that = this;
 switch (_that) {
 case _Round() when $default != null:
-return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust);case _:
+return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust,_that.mult1,_that.mult2,_that.mult3);case _:
   return null;
 
 }
@@ -477,16 +497,23 @@ return $default(_that.user,_that.dart1,_that.dart2,_that.dart3,_that.bust);case 
 @JsonSerializable()
 
 class _Round extends Round {
-   _Round({required this.user, this.dart1, this.dart2, this.dart3, this.bust = false}): super._();
+   _Round({required this.user, this.dart1, this.dart2, this.dart3, this.bust = false, @JsonKey(includeIfNull: false) this.mult1, @JsonKey(includeIfNull: false) this.mult2, @JsonKey(includeIfNull: false) this.mult3}): super._();
   factory _Round.fromJson(Map<String, dynamic> json) => _$RoundFromJson(json);
 
 @override  User user;
+/// x01: the points each dart scored. Cricket: the segment hit (15–20, or
+/// 25 for bull), or 0 for a miss or any other number.
 @override  int? dart1;
 @override  int? dart2;
 @override  int? dart3;
 /// The round went over (or left an unfinishable 1). Its darts stay
 /// recorded so undo can restore them, but it scores nothing.
 @override@JsonKey()  bool bust;
+/// Cricket only: each dart's ring (1 single, 2 double, 3 triple), null
+/// for a miss. Left out of x01 saves.
+@override@JsonKey(includeIfNull: false)  int? mult1;
+@override@JsonKey(includeIfNull: false)  int? mult2;
+@override@JsonKey(includeIfNull: false)  int? mult3;
 
 /// Create a copy of Round
 /// with the given fields replaced by the non-null parameter values.
@@ -503,7 +530,7 @@ Map<String, dynamic> toJson() {
 
 @override
 String toString() {
-  return 'Round(user: $user, dart1: $dart1, dart2: $dart2, dart3: $dart3, bust: $bust)';
+  return 'Round(user: $user, dart1: $dart1, dart2: $dart2, dart3: $dart3, bust: $bust, mult1: $mult1, mult2: $mult2, mult3: $mult3)';
 }
 
 
@@ -514,7 +541,7 @@ abstract mixin class _$RoundCopyWith<$Res> implements $RoundCopyWith<$Res> {
   factory _$RoundCopyWith(_Round value, $Res Function(_Round) _then) = __$RoundCopyWithImpl;
 @override @useResult
 $Res call({
- User user, int? dart1, int? dart2, int? dart3, bool bust
+ User user, int? dart1, int? dart2, int? dart3, bool bust,@JsonKey(includeIfNull: false) int? mult1,@JsonKey(includeIfNull: false) int? mult2,@JsonKey(includeIfNull: false) int? mult3
 });
 
 
@@ -531,14 +558,17 @@ class __$RoundCopyWithImpl<$Res>
 
 /// Create a copy of Round
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? user = null,Object? dart1 = freezed,Object? dart2 = freezed,Object? dart3 = freezed,Object? bust = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? user = null,Object? dart1 = freezed,Object? dart2 = freezed,Object? dart3 = freezed,Object? bust = null,Object? mult1 = freezed,Object? mult2 = freezed,Object? mult3 = freezed,}) {
   return _then(_Round(
 user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as User,dart1: freezed == dart1 ? _self.dart1 : dart1 // ignore: cast_nullable_to_non_nullable
 as int?,dart2: freezed == dart2 ? _self.dart2 : dart2 // ignore: cast_nullable_to_non_nullable
 as int?,dart3: freezed == dart3 ? _self.dart3 : dart3 // ignore: cast_nullable_to_non_nullable
 as int?,bust: null == bust ? _self.bust : bust // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,mult1: freezed == mult1 ? _self.mult1 : mult1 // ignore: cast_nullable_to_non_nullable
+as int?,mult2: freezed == mult2 ? _self.mult2 : mult2 // ignore: cast_nullable_to_non_nullable
+as int?,mult3: freezed == mult3 ? _self.mult3 : mult3 // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

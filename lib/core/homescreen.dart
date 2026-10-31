@@ -4,6 +4,7 @@ import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/utils/ads.dart';
 import 'package:darts/utils/analytics.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/cricket_strings.dart';
 import 'package:darts/utils/dialogs.dart';
 import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/text_styles.dart';
@@ -318,7 +319,7 @@ class _ContinueCard extends StatelessWidget {
             child: Pressable(
               onTap: onResume,
               semanticLabel:
-                  "Тоглолт үргэлжлүүлэх, ${game.startFrom}, $players",
+                  "Тоглолт үргэлжлүүлэх, ${game.typeLabel}, $players",
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 12, 4, 12),
                 child: Row(
@@ -350,7 +351,7 @@ class _ContinueCard extends StatelessWidget {
                             color: BColors().primary,
                           ),
                           BComment(
-                            "${game.startFrom} · $players",
+                            "${game.typeLabel} · $players",
                             color: BColors().textSecondary,
                             size: .s,
                             maxLine: 1,
