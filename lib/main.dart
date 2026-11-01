@@ -1,3 +1,4 @@
+import 'package:darts/firebase_options.dart';
 import 'package:darts/router.dart';
 import 'package:darts/utils/ads.dart';
 import 'package:darts/utils/analytics.dart';
@@ -16,10 +17,13 @@ void main() async {
   await initializeDateFormatting('mn_MN', null);
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  // Firebase needs GoogleService-Info.plist (iOS) and google-services.json
-  // (Android). Until they exist, init fails and analytics stay switched off.
+  // Firebase project darts-onoo (configured with `flutterfire configure`).
+  // Only iOS and Android have options; elsewhere init throws and analytics
+  // stay switched off.
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     Analytics.enable();
   } catch (e) {
     debugPrint('Firebase not configured, analytics disabled: $e');

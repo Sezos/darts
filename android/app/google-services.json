@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "392300985513",
+    "project_id": "darts-onoo",
+    "storage_bucket": "darts-onoo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392300985513:android:6008be707b7b9617a33db8",
+        "android_client_info": {
+          "package_name": "mn.badral.darts"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOW09d3UPUSwRsgVzF-svCzbcrfdbxtpc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
