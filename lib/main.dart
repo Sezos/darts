@@ -29,6 +29,7 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     Analytics.enable();
+    Analytics.trackScreens(router);
   } catch (e) {
     debugPrint('Firebase not configured, analytics disabled: $e');
   }

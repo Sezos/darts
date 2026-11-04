@@ -1,6 +1,7 @@
 import 'package:darts/core/providers/settings/settings.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/l10n/l10n.dart';
+import 'package:darts/utils/analytics.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'players.provider.g.dart';
@@ -37,7 +38,9 @@ class PlayersNotifier extends _$PlayersNotifier {
   }
 
   void saveState([List<User>? list]) {
-    storage.write(key, (list ?? state).map((e) => e.toJson()).toList());
+    final players = list ?? state;
+    storage.write(key, players.map((e) => e.toJson()).toList());
+    Analytics.savedPlayers(players.length);
   }
 
   void deletePlayer(int userId) {

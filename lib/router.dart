@@ -13,18 +13,22 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: "/",
+      name: "home",
       builder: (context, state) => const Homescreen(),
     ),
     GoRoute(
       path: "/players",
+      name: "players",
       builder: (context, state) => const PlayersScreen(),
     ),
     GoRoute(
       path: "/settings",
+      name: "settings",
       builder: (context, state) => const SettingsScreen(),
     ),
     GoRoute(
       path: "/game",
+      name: "game",
       // A new Game starts fresh; an OngoingGame resumes where it was left.
       builder: (context, state) => switch (state.extra) {
         OngoingGame o => GameScreen(o.game, resumeRound: o.current),
@@ -34,10 +38,12 @@ final router = GoRouter(
     ),
     GoRoute(
       path: "/history",
+      name: "history",
       builder: (context, state) => const HistoryScreen(),
     ),
     GoRoute(
       path: "/stats",
+      name: "stats",
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>;
         return StatsScreen(

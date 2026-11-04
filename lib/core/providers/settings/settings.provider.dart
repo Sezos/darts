@@ -1,4 +1,7 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:darts/l10n/l10n.dart';
+import 'package:darts/utils/analytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -65,25 +68,50 @@ class SettingsNotifier extends Notifier<AppSettings> {
   @override
   AppSettings build() {
     final saved = _storage.read(_key);
-    if (saved != null) {
-      return AppSettings.fromJson(Map<String, dynamic>.from(saved as Map));
-    }
-    return const AppSettings();
+    final settings = saved == null
+        ? const AppSettings()
+        : AppSettings.fromJson(Map<String, dynamic>.from(saved as Map));
+    _reportProperties(settings);
+    return settings;
   }
 
-  void toggleSound() =>
-      _update(state.copyWith(soundEnabled: !state.soundEnabled));
-  void toggleHaptic() =>
-      _update(state.copyWith(hapticEnabled: !state.hapticEnabled));
-  void toggleDoubleOut() =>
-      _update(state.copyWith(doubleOutRequired: !state.doubleOutRequired));
-  void setLanguage(AppLanguage language) =>
-      _update(state.copyWith(language: language));
+  void toggleSound() {
+    _update(state.copyWith(soundEnabled: !state.soundEnabled));
+    Analytics.settingChanged('sound', _onOff(state.soundEnabled));
+  }
+
+  void toggleHaptic() {
+    _update(state.copyWith(hapticEnabled: !state.hapticEnabled));
+    Analytics.settingChanged('haptic', _onOff(state.hapticEnabled));
+  }
+
+  void toggleDoubleOut() {
+    _update(state.copyWith(doubleOutRequired: !state.doubleOutRequired));
+    Analytics.settingChanged('double_out', _onOff(state.doubleOutRequired));
+  }
+
+  void setLanguage(AppLanguage language) {
+    if (language == state.language) return;
+    _update(state.copyWith(language: language));
+    Analytics.settingChanged('language', language.name);
+  }
 
   void _update(AppSettings s) {
     state = s;
     _storage.write(_key, s.toJson());
+    _reportProperties(s);
   }
+
+  static String _onOff(bool on) => on ? 'on' : 'off';
+
+  static void _reportProperties(AppSettings s) => Analytics.settingsProperties(
+    languageSetting: s.language.name,
+    appLanguage: resolveLocale(
+      s.language,
+      PlatformDispatcher.instance.locales,
+    ).languageCode,
+    doubleOut: s.doubleOutRequired,
+  );
 }
 
 final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(

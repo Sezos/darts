@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:darts/utils/analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -53,7 +54,9 @@ class AdService {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) => onLoaded(ad as BannerAd),
+        onAdImpression: (_) => Analytics.adImpression('home_banner'),
         onAdFailedToLoad: (ad, error) {
+          Analytics.adFailedToLoad('home_banner', error.code);
           ad.dispose();
         },
       ),

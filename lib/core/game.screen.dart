@@ -115,6 +115,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         gameType: _gameType,
         playerCount: widget.game.users.length,
       );
+    } else {
+      Analytics.gameResumed(mode: widget.game.mode.name, gameType: _gameType);
     }
     _logSuggestionForTurn();
   }
@@ -123,6 +125,14 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   void dispose() {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WakelockPlus.disable();
+    if (!engine.isFinished) {
+      Analytics.gameLeft(
+        mode: widget.game.mode.name,
+        gameType: _gameType,
+        roundsPlayed: engine.game.rounds.length,
+        playerCount: widget.game.users.length,
+      );
+    }
     win.dispose();
     click.dispose();
     _confettiController.dispose();

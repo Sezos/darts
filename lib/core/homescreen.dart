@@ -23,12 +23,6 @@ class Homescreen extends ConsumerStatefulWidget {
 
 class _HomescreenState extends ConsumerState<Homescreen> {
   @override
-  void initState() {
-    super.initState();
-    Analytics.screen('home');
-  }
-
-  @override
   Widget build(BuildContext context) {
     final matches = ref.watch(historyProvider);
     final avg = averagePpr(matches, ref.watch(userProvider).id);
@@ -179,6 +173,7 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                             );
                             if (discard) {
                               ref.read(ongoingGameProvider.notifier).clear();
+                              Analytics.gameDiscarded();
                             }
                           },
                         ),
