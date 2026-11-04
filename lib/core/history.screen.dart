@@ -1,10 +1,11 @@
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
+import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/cricket_strings.dart';
 import 'package:darts/utils/dialogs.dart';
-import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/format.dart';
+import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -24,9 +25,9 @@ class HistoryScreen extends ConsumerWidget {
 
     Future<bool> confirmDelete() => showConfirmDialog(
       context,
-      title: "Тоглолтыг устгах уу?",
-      message: "Энэ тоглолт түүх болон статистикаас бүрмөсөн устна.",
-      confirmLabel: "Устгах",
+      title: context.l10n.deleteGameTitle,
+      message: context.l10n.deleteGameMessage,
+      confirmLabel: context.l10n.delete,
       destructive: true,
     );
 
@@ -43,7 +44,7 @@ class HistoryScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: BColors().background,
         surfaceTintColor: Colors.transparent,
-        title: BText("Түүх", fontWeight: .w800, size: .l),
+        title: BText(context.l10n.history, fontWeight: .w800, size: .l),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Divider(height: 1, color: BColors().border),
@@ -67,7 +68,9 @@ class HistoryScreen extends ConsumerWidget {
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: Pressable(
-                            semanticLabel: "${e.value}: статистик",
+                            semanticLabel: context.l10n.playerStatsSemantics(
+                              e.value,
+                            ),
                             onTap: () => context.push(
                               '/stats',
                               extra: {
@@ -175,8 +178,8 @@ class HistoryScreen extends ConsumerWidget {
                         // delete as a custom action too.
                         child: Semantics(
                           customSemanticsActions: {
-                            const CustomSemanticsAction(
-                              label: "Устгах",
+                            CustomSemanticsAction(
+                              label: context.l10n.delete,
                             ): () async {
                               if (await confirmDelete()) {
                                 ref
@@ -288,13 +291,13 @@ class _HistoryCard extends StatelessWidget {
                 ),
                 if (isParticipant)
                   BComment(
-                    isWin ? "Ялсан" : "Ялагдсан — $winner яллаа",
+                    isWin ? context.l10n.won : context.l10n.lostTo(winner),
                     color: resultColor,
                     size: .s,
                   )
                 else
                   BComment(
-                    "Ялагч: $winner",
+                    context.l10n.winnerIs(winner),
                     color: BColors().textSecondary,
                     size: .s,
                   ),
@@ -347,9 +350,9 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
           ),
-          BText("Тоглолт байхгүй", fontWeight: .w700, size: .l),
+          BText(context.l10n.historyEmpty, fontWeight: .w700, size: .l),
           BComment(
-            "Тоглолт дууссаны дараа энд харагдана",
+            context.l10n.emptyAfterGame,
             color: BColors().textSecondary,
             textAlign: TextAlign.center,
           ),

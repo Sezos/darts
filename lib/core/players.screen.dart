@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/players/players.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
+import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/cricket_strings.dart';
 import 'package:darts/utils/dialogs.dart';
@@ -45,7 +46,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
         backgroundColor: BColors().background,
         surfaceTintColor: Colors.transparent,
         title: BText(
-          "Тоглогч сонгох",
+          context.l10n.choosePlayers,
           fontWeight: .w800,
           size: .l,
         ),
@@ -68,7 +69,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
                     children: [
                       // ── Game mode ──────────────────────────────────────────
                       _Section(
-                        label: "Тоглоомын төрөл",
+                        label: context.l10n.gameType,
                         child: _ModeSelector(
                           selected: mode,
                           onSelect: (m) => setState(() => mode = m),
@@ -77,7 +78,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
 
                       if (mode == GameMode.x01)
                         _Section(
-                          label: CricketText.startScore,
+                          label: context.l10n.startScore,
                           child: _GameModeSelector(
                             selected: startCount,
                             onSelect: (v) => setState(() => startCount = v),
@@ -88,12 +89,12 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
 
                       // ── Selected players ───────────────────────────────────
                       _Section(
-                        label: "Эрэмбэ",
+                        label: context.l10n.throwOrder,
                         trailing: Row(
                           spacing: 8,
                           children: [
                             BComment(
-                              "Санамсаргүй",
+                              context.l10n.random,
                               color: BColors().textSecondary,
                               size: .s,
                             ),
@@ -112,7 +113,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
                           child: playersToPlay.isEmpty
                               ? Center(
                                   child: BComment(
-                                    "Тоглогч сонгоно уу",
+                                    context.l10n.selectPlayersHint,
                                     color: BColors().textSecondary,
                                   ),
                                 )
@@ -145,10 +146,10 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
 
                       // ── All players ────────────────────────────────────────
                       _Section(
-                        label: "Бүх тоглогчид",
+                        label: context.l10n.allPlayers,
                         trailing: Pressable(
                           onTap: () => _showPlayerSheet(context),
-                          semanticLabel: "Тоглогч нэмэх",
+                          semanticLabel: context.l10n.addPlayer,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -170,7 +171,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
                                   size: 14,
                                 ),
                                 BText(
-                                  "Нэмэх",
+                                  context.l10n.add,
                                   color: BColors().primary,
                                   size: .s,
                                   fontWeight: .w700,
@@ -203,7 +204,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
                                       } else {
                                         if (playersToPlay.length >= 5) {
                                           showSnackMsg(
-                                            "Нэг тоглолтод 5 хүртэл тоглогч оролцоно",
+                                            context.l10n.maxPlayers,
                                             context,
                                           );
                                           return;
@@ -216,10 +217,11 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
                                   onDelete: () async {
                                     final confirmed = await showConfirmDialog(
                                       context,
-                                      title: "«${player.name}»-г устгах уу?",
-                                      message:
-                                          "Түүхэн дэх тоглолтууд хэвээр үлдэнэ.",
-                                      confirmLabel: "Устгах",
+                                      title: context.l10n.deletePlayerTitle(
+                                        player.name,
+                                      ),
+                                      message: context.l10n.deletePlayerMessage,
+                                      confirmLabel: context.l10n.delete,
                                       destructive: true,
                                     );
                                     if (!confirmed) return;
@@ -252,7 +254,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
               child: Column(
                 children: [
                   PrimaryButton(
-                    label: "Эхлэх",
+                    label: context.l10n.start,
                     onTap: playersToPlay.isEmpty
                         ? null
                         : () => context.push(
@@ -284,7 +286,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
       context: context,
       backgroundColor: BColors().surface,
       builder: (ctx) => _PlayerSheet(
-        title: "Тоглогч нэмэх",
+        title: context.l10n.addPlayer,
         controller: controller,
         onSave: () {
           final name = controller.text.trim();
@@ -307,7 +309,7 @@ class _PlayersScreenState extends ConsumerState<PlayersScreen> {
       context: context,
       backgroundColor: BColors().surface,
       builder: (ctx) => _PlayerSheet(
-        title: "Тоглогч засах",
+        title: context.l10n.editPlayer,
         controller: controller,
         onSave: () {
           final name = controller.text.trim();
@@ -489,7 +491,7 @@ class _CricketRules extends StatelessWidget {
           ),
           Expanded(
             child: BComment(
-              CricketText.rules,
+              context.l10n.cricketRules,
               color: BColors().textSecondary,
               size: .s,
             ),
@@ -700,12 +702,12 @@ class _PlayerRow extends StatelessWidget {
             if (!isCurrentUser) ...[
               IconAction(
                 icon: HugeIcons.strokeRoundedPencilEdit02,
-                label: "${player.name}-г засах",
+                label: context.l10n.editPlayerSemantics(player.name),
                 onTap: onEdit,
               ),
               IconAction(
                 icon: HugeIcons.strokeRoundedDelete01,
-                label: "${player.name}-г устгах",
+                label: context.l10n.deletePlayerSemantics(player.name),
                 color: BColors().danger.withAlpha(200),
                 onTap: onDelete,
               ),
@@ -756,7 +758,7 @@ class _PlayerSheet extends StatelessWidget {
                 const Spacer(),
                 IconAction(
                   icon: HugeIcons.strokeRoundedCancel01,
-                  label: "Хаах",
+                  label: context.l10n.close,
                   onTap: () => context.pop(),
                 ),
               ],
@@ -765,17 +767,21 @@ class _PlayerSheet extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 8,
               children: [
-                BComment("Нэр", color: BColors().textSecondary, size: .s),
+                BComment(
+                  context.l10n.nameLabel,
+                  color: BColors().textSecondary,
+                  size: .s,
+                ),
                 MoonTextInput(
                   controller: controller,
-                  hintText: "Жишээ нь: Бат",
+                  hintText: context.l10n.nameExample,
                   autofocus: true,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => onSave(),
                 ),
               ],
             ),
-            PrimaryButton(label: "Хадгалах", height: 48, onTap: onSave),
+            PrimaryButton(label: context.l10n.save, height: 48, onTap: onSave),
           ],
         ),
       ),

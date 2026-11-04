@@ -1,6 +1,7 @@
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/game/ongoing_game.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
+import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/ads.dart';
 import 'package:darts/utils/analytics.dart';
 import 'package:darts/utils/colors.dart';
@@ -101,13 +102,13 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               BText(
-                                "ДАРТСНЫ ОНОО",
+                                context.l10n.homeTitle,
                                 fontWeight: .w900,
                                 size: .xl,
                                 letterSpacing: 2.5,
                               ),
                               BComment(
-                                "Тоглолтын бүртгэл",
+                                context.l10n.homeSubtitle,
                                 color: BColors().textSecondary,
                                 size: .s,
                               ),
@@ -116,7 +117,7 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                           const Spacer(),
                           IconTile(
                             icon: HugeIcons.strokeRoundedSettings01,
-                            label: "Тохиргоо",
+                            label: context.l10n.settings,
                             onTap: () => context.push("/settings"),
                           ),
                         ],
@@ -144,14 +145,14 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                         children: [
                           Expanded(
                             child: _StatCard(
-                              label: "Тоглосон",
+                              label: context.l10n.played,
                               value: matches.length.toString(),
                               icon: HugeIcons.strokeRoundedTarget01,
                             ),
                           ),
                           Expanded(
                             child: _StatCard(
-                              label: "Дундаж оноо",
+                              label: context.l10n.avgScore,
                               value: avg,
                               icon: HugeIcons.strokeRoundedChart,
                             ),
@@ -171,9 +172,9 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                           onDiscard: () async {
                             final discard = await showConfirmDialog(
                               context,
-                              title: "Тоглолтыг хаях уу?",
-                              message: "Дуусаагүй тоглолтын оноо устана.",
-                              confirmLabel: "Хаях",
+                              title: context.l10n.discardGameTitle,
+                              message: context.l10n.discardGameMessage,
+                              confirmLabel: context.l10n.discard,
                               destructive: true,
                             );
                             if (discard) {
@@ -193,14 +194,16 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                         children: [
                           Expanded(
                             child: PrimaryButton(
-                              label: ongoing != null ? "Шинэ тоглолт" : "Эхлэх",
+                              label: ongoing != null
+                                  ? context.l10n.newGame
+                                  : context.l10n.start,
                               icon: HugeIcons.strokeRoundedPlay,
                               onTap: () => context.push("/players"),
                             ),
                           ),
                           IconTile(
                             icon: HugeIcons.strokeRoundedClock04,
-                            label: "Түүх",
+                            label: context.l10n.history,
                             size: 52,
                             onTap: () => context.push("/history"),
                           ),
@@ -318,8 +321,10 @@ class _ContinueCard extends StatelessWidget {
           Expanded(
             child: Pressable(
               onTap: onResume,
-              semanticLabel:
-                  "Тоглолт үргэлжлүүлэх, ${game.typeLabel}, $players",
+              semanticLabel: context.l10n.continueGameSemantics(
+                game.typeLabel,
+                players,
+              ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 12, 4, 12),
                 child: Row(
@@ -346,7 +351,7 @@ class _ContinueCard extends StatelessWidget {
                         spacing: 2,
                         children: [
                           BText(
-                            "Тоглолт үргэлжлүүлэх",
+                            context.l10n.continueGame,
                             fontWeight: .w800,
                             color: BColors().primary,
                           ),
@@ -367,7 +372,7 @@ class _ContinueCard extends StatelessWidget {
           ),
           IconAction(
             icon: HugeIcons.strokeRoundedCancel01,
-            label: "Тоглолтыг хаях",
+            label: context.l10n.discardGame,
             onTap: onDiscard,
           ),
           const SizedBox(width: 4),

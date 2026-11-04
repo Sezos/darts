@@ -1,7 +1,7 @@
 import 'package:darts/core/game/cricket_engine.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
+import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/colors.dart';
-import 'package:darts/utils/cricket_strings.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,9 +44,9 @@ class StatsScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              BText("Статистик байхгүй", fontWeight: .w700),
+              BText(context.l10n.statsEmpty, fontWeight: .w700),
               BComment(
-                "Тоглолт дууссаны дараа энд харагдана",
+                context.l10n.emptyAfterGame,
                 color: BColors().textSecondary,
                 textAlign: TextAlign.center,
               ),
@@ -164,7 +164,7 @@ class StatsScreen extends ConsumerWidget {
                     children: [
                       BText(userName, fontWeight: .w900, size: .l),
                       BComment(
-                        "${myGames.length} тоглолт",
+                        context.l10n.gamesCount(myGames.length),
                         color: BColors().textSecondary,
                         size: .s,
                       ),
@@ -181,7 +181,7 @@ class StatsScreen extends ConsumerWidget {
                 Expanded(
                   child: _BigStatCard(
                     value: wins.toString(),
-                    label: "Ялалт",
+                    label: context.l10n.wins,
                     icon: HugeIcons.strokeRoundedAward01,
                     color: BColors().primary,
                   ),
@@ -189,7 +189,7 @@ class StatsScreen extends ConsumerWidget {
                 Expanded(
                   child: _BigStatCard(
                     value: losses.toString(),
-                    label: "Ялагдал",
+                    label: context.l10n.losses,
                     icon: HugeIcons.strokeRoundedSad01,
                     color: BColors().danger,
                   ),
@@ -197,7 +197,7 @@ class StatsScreen extends ConsumerWidget {
                 Expanded(
                   child: _BigStatCard(
                     value: "$winRate%",
-                    label: "Ялалтын %",
+                    label: context.l10n.winRate,
                     icon: HugeIcons.strokeRoundedChart,
                     color: BColors().gold,
                   ),
@@ -207,19 +207,22 @@ class StatsScreen extends ConsumerWidget {
 
             // Performance stats, per mode
             if (x01Games.isNotEmpty) ...[
-              _SectionHeader(label: CricketText.x01Performance),
+              _SectionHeader(label: context.l10n.x01Performance),
               Row(
                 spacing: 10,
                 children: [
                   Expanded(
-                    child: _StatTile(label: "Дундаж PPR", value: avgPPR),
-                  ),
-                  Expanded(
-                    child: _StatTile(label: "Шилдэг раунд", value: bestRound),
+                    child: _StatTile(label: context.l10n.avgPpr, value: avgPPR),
                   ),
                   Expanded(
                     child: _StatTile(
-                      label: "Нийт дарт",
+                      label: context.l10n.bestRound,
+                      value: bestRound,
+                    ),
+                  ),
+                  Expanded(
+                    child: _StatTile(
+                      label: context.l10n.totalDarts,
                       value: totalDarts.toString(),
                     ),
                   ),
@@ -227,22 +230,22 @@ class StatsScreen extends ConsumerWidget {
               ),
             ],
             if (cricketGames.isNotEmpty) ...[
-              _SectionHeader(label: CricketText.cricketPerformance),
+              _SectionHeader(label: context.l10n.cricketPerformance),
               Row(
                 spacing: 10,
                 children: [
                   Expanded(
-                    child: _StatTile(label: CricketText.avgMpr, value: avgMpr),
+                    child: _StatTile(label: context.l10n.avgMpr, value: avgMpr),
                   ),
                   Expanded(
                     child: _StatTile(
-                      label: CricketText.bestMarks,
+                      label: context.l10n.bestRound,
                       value: bestMarks,
                     ),
                   ),
                   Expanded(
                     child: _StatTile(
-                      label: CricketText.games,
+                      label: context.l10n.games,
                       value: cricketGames.length.toString(),
                     ),
                   ),
@@ -252,7 +255,7 @@ class StatsScreen extends ConsumerWidget {
 
             // Opponent breakdown
             if (opponentMap.isNotEmpty) ...[
-              _SectionHeader(label: "Өрсөлдөгчид"),
+              _SectionHeader(label: context.l10n.opponents),
               ...opponentMap.values.map(
                 (rec) => _OpponentTile(record: rec),
               ),

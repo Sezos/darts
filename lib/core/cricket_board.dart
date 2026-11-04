@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:darts/core/game/cricket_engine.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
+import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/cricket_strings.dart';
 import 'package:darts/utils/interaction.dart';
@@ -153,7 +154,9 @@ class _PlayerHeader extends StatelessWidget {
     }
 
     return Semantics(
-      label: CricketText.playerSemantics(name, points, turn: isCurrent),
+      label:
+          "${context.l10n.cricketPlayerSemantics(name, points)}"
+          "${isCurrent ? context.l10n.turnSuffix : ''}",
       selected: isCurrent,
       liveRegion: isCurrent,
       excludeSemantics: true,
@@ -222,7 +225,7 @@ class _NumberCell extends StatelessWidget {
         : BColors().textPrimary;
     return Semantics(
       label: dead
-          ? CricketText.deadSemantics(target)
+          ? "${CricketText.targetLabel(target)}, ${context.l10n.closedByAll}"
           : CricketText.targetLabel(target),
       excludeSemantics: true,
       child: Center(
@@ -267,7 +270,7 @@ class _MarksCell extends StatelessWidget {
         : BColors().textPrimary;
 
     return Semantics(
-      label: CricketText.marksSemantics(name, target, marks),
+      label: CricketText.marksSemantics(context.l10n, name, target, marks),
       excludeSemantics: true,
       child: ColoredBox(
         color: isCurrent ? BColors().primaryDim : Colors.transparent,

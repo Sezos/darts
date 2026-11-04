@@ -1,4 +1,6 @@
+import 'package:darts/core/providers/settings/settings.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
+import 'package:darts/l10n/l10n.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'players.provider.g.dart';
@@ -14,15 +16,11 @@ class PlayersNotifier extends _$PlayersNotifier {
     var user = ref.read(userProvider);
 
     if (players == null) {
+      final l10n = l10nFor(ref.read(settingsProvider).language);
       final lol = [
         user,
-        User(id: 2, name: "Тоглогч 2"),
-        User(id: 3, name: "Тоглогч 3"),
-        User(id: 4, name: "Тоглогч 4"),
-        User(id: 5, name: "Тоглогч 5"),
-        User(id: 6, name: "Тоглогч 6"),
-        User(id: 7, name: "Тоглогч 7"),
-        User(id: 8, name: "Тоглогч 8"),
+        for (var id = 2; id <= 8; id++)
+          User(id: id, name: l10n.defaultPlayerName(id)),
       ];
       saveState(lol);
       return lol;

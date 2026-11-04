@@ -1,3 +1,5 @@
+import 'package:darts/core/providers/settings/settings.provider.dart';
+import 'package:darts/l10n/l10n.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -25,7 +27,8 @@ class UserNotifier extends _$UserNotifier {
     if (storage.read(key) != null) {
       return User.fromJson(storage.read(key));
     }
-    return User(id: 0, name: "Тоглогч 1");
+    final l10n = l10nFor(ref.read(settingsProvider).language);
+    return User(id: 0, name: l10n.defaultPlayerName(1));
   }
 
   User updateUser({String? name, int? ppd}) {

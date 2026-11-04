@@ -1,0 +1,154 @@
+{
+  "@@locale": "en",
+
+  "appName": "DartScore",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "save": "Save",
+  "close": "Close",
+  "start": "Start",
+  "history": "History",
+  "settings": "Settings",
+  "miss": "Miss",
+  "missLower": "miss",
+  "nameLabel": "Name",
+  "emptyAfterGame": "Shows up here once a game ends",
+  "defaultPlayerName": "Player {number}",
+  "@defaultPlayerName": {
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "points": "{points} pts",
+  "@points": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+  "turnSuffix": ", throwing",
+
+  "homeTitle": "DARTSCORE",
+  "homeSubtitle": "Score tracker",
+  "played": "Played",
+  "avgScore": "Avg score",
+  "discardGameTitle": "Discard this game?",
+  "discardGameMessage": "Scores from the unfinished game will be lost.",
+  "discard": "Discard",
+  "discardGame": "Discard game",
+  "newGame": "New game",
+  "continueGame": "Continue game",
+  "continueGameSemantics": "Continue game, {type}, {players}",
+  "@continueGameSemantics": {
+    "placeholders": { "type": { "type": "String" }, "players": { "type": "String" } }
+  },
+
+  "historyEmpty": "No games yet",
+  "deleteGameTitle": "Delete this game?",
+  "deleteGameMessage": "This game will be removed from history and stats for good.",
+  "playerStatsSemantics": "{name}: stats",
+  "@playerStatsSemantics": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "won": "Won",
+  "lostTo": "Lost — {winner} won",
+  "@lostTo": {
+    "placeholders": { "winner": { "type": "String" } }
+  },
+  "winnerIs": "Winner: {winner}",
+  "@winnerIs": {
+    "placeholders": { "winner": { "type": "String" } }
+  },
+
+  "statsEmpty": "No stats yet",
+  "gamesCount": "{count, plural, =1{1 game} other{{count} games}}",
+  "@gamesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "wins": "Wins",
+  "losses": "Losses",
+  "winRate": "Win %",
+  "avgPpr": "Avg PPR",
+  "bestRound": "Best round",
+  "totalDarts": "Total darts",
+  "opponents": "Opponents",
+  "x01Performance": "Performance · x01",
+  "cricketPerformance": "Performance · Cricket",
+  "avgMpr": "Avg MPR",
+  "games": "Games",
+
+  "gameOver": "Game over",
+  "playerWins": "{name} wins!",
+  "@playerWins": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "finish": "Finish",
+  "playAgain": "Play again",
+  "checkoutSemantics": "Checkout: {route}",
+  "@checkoutSemantics": {
+    "placeholders": { "route": { "type": "String" } }
+  },
+  "exitGame": "Exit game",
+  "undoLastDart": "Undo last dart",
+  "nextPlayer": "Next player",
+  "nextKey": "NEXT",
+  "scoreCardSemantics": "{name}, {remaining} left",
+  "@scoreCardSemantics": {
+    "placeholders": { "name": { "type": "String" }, "remaining": { "type": "int" } }
+  },
+  "dartOrdinal": "Dart {number}",
+  "@dartOrdinal": {
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "dartUpNext": "up next",
+  "dartNotThrown": "not thrown",
+
+  "cricketPlayerSemantics": "{name}, {points} points",
+  "@cricketPlayerSemantics": {
+    "placeholders": { "name": { "type": "String" }, "points": { "type": "int" } }
+  },
+  "marksNone": "no marks",
+  "marksClosed": "closed",
+  "marksCount": "{count, plural, =1{1 mark} other{{count} marks}}",
+  "@marksCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "closedByAll": "closed by all",
+
+  "choosePlayers": "Choose players",
+  "gameType": "Game type",
+  "startScore": "Starting score",
+  "throwOrder": "Throw order",
+  "random": "Random",
+  "selectPlayersHint": "Pick players below",
+  "allPlayers": "All players",
+  "addPlayer": "Add player",
+  "add": "Add",
+  "maxPlayers": "Up to 5 players per game",
+  "deletePlayerTitle": "Delete “{name}”?",
+  "@deletePlayerTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deletePlayerMessage": "Their past games stay in history.",
+  "editPlayer": "Edit player",
+  "editPlayerSemantics": "Edit {name}",
+  "@editPlayerSemantics": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deletePlayerSemantics": "Delete {name}",
+  "@deletePlayerSemantics": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "nameExample": "e.g. Alex",
+  "cricketRules": "Close 15–20 and Bull with 3 marks each. Hitting a number you've closed scores points, unless your opponents have closed it too. Close everything with the most points to win.",
+
+  "enterName": "Enter your name",
+  "nameSaved": "Name saved",
+  "profile": "Profile",
+  "gameRules": "Game rules",
+  "doubleOutRequired": "Double-out required",
+  "doubleOutHint": "You must finish on a double",
+  "soundAndHaptics": "Sound & haptics",
+  "sound": "Sound",
+  "soundHint": "Hit and win sounds",
+  "vibration": "Vibration",
+  "vibrationHint": "Vibrate on every tap",
+  "saveName": "Save name",
+  "language": "Language",
+  "languageAuto": "Auto"
+}

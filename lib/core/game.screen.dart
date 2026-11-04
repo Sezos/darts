@@ -9,6 +9,7 @@ import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/game/ongoing_game.provider.dart';
 import 'package:darts/core/providers/settings/settings.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
+import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/analytics.dart';
 import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/cricket_strings.dart';
@@ -277,7 +278,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           _FinalScore(
             u.name,
             _isCricket
-                ? CricketText.points(_cricket.points(u))
+                ? context.l10n.points(_cricket.points(u))
                 : '${_x01.remaining(u)}',
           ),
       ],
@@ -340,12 +341,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           BComment(
-                            "Тоглолт дууслаа",
+                            context.l10n.gameOver,
                             color: BColors().textSecondary,
                             size: .s,
                           ),
                           BText(
-                            '$winnerName яллаа!',
+                            context.l10n.playerWins(winnerName),
                             fontWeight: .w900,
                             size: .l,
                             color: BColors().primary,
@@ -396,7 +397,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                 children: [
                   Expanded(
                     child: SecondaryButton(
-                      label: "Дуусгах",
+                      label: context.l10n.finish,
                       onTap: () {
                         Navigator.of(dialogContext).pop();
                         onClose();
@@ -405,7 +406,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   ),
                   Expanded(
                     child: PrimaryButton(
-                      label: "Дахин тоглох",
+                      label: context.l10n.playAgain,
                       height: 48,
                       onTap: () {
                         Navigator.of(dialogContext).pop();
@@ -548,7 +549,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
               if (suggestion.isNotEmpty)
                 Semantics(
-                  label: "Дуусгах санал: $suggestion",
+                  label: context.l10n.checkoutSemantics(suggestion),
                   excludeSemantics: true,
                   child: Container(
                     width: double.infinity,
@@ -682,7 +683,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     children: [
                       Expanded(
                         child: _LandscapeKey(
-                          semanticLabel: "Тоглолтоос гарах",
+                          semanticLabel: context.l10n.exitGame,
                           onTap: () => context.pop(),
                           child: HugeIcon(
                             icon: HugeIcons.strokeRoundedCancel01,
@@ -694,7 +695,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                       Expanded(
                         child: _LandscapeKey(
                           onTap: () => onTapNumber(0),
-                          child: _keyLabel("Алдсан"),
+                          child: _keyLabel(context.l10n.miss),
                         ),
                       ),
                       Expanded(
@@ -742,7 +743,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                           color: engine.canUndo
                               ? BColors().danger
                               : BColors().textSecondary,
-                          semanticLabel: "Сүүлийн шидэлтийг буцаах",
+                          semanticLabel: context.l10n.undoLastDart,
                           onTap: engine.canUndo ? onTapBack : null,
                           child: HugeIcon(
                             icon: HugeIcons.strokeRoundedArrowLeft01,
@@ -756,7 +757,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                       Expanded(
                         flex: 3,
                         child: Pressable(
-                          semanticLabel: "Дараагийн тоглогч",
+                          semanticLabel: context.l10n.nextPlayer,
                           minSize: 0,
                           onTap: onTapForward,
                           child: Container(
@@ -780,7 +781,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                                   size: 22,
                                 ),
                                 BText(
-                                  "ДАРААХ",
+                                  context.l10n.nextKey,
                                   color: BColors().onPrimary,
                                   fontWeight: .w900,
                                   size: .xs,
@@ -870,7 +871,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     children: [
                       IconTile(
                         icon: HugeIcons.strokeRoundedCancel01,
-                        label: "Тоглолтоос гарах",
+                        label: context.l10n.exitGame,
                         onTap: () => context.pop(),
                       ),
                       Expanded(
@@ -997,8 +998,8 @@ class _ScoreCard extends StatelessWidget {
     }
 
     final label =
-        "${data.name}, ${data.remaining} оноо үлдсэн"
-        "${current ? ', ээлж' : ''}${busting ? ', bust' : ''}";
+        "${context.l10n.scoreCardSemantics(data.name, data.remaining)}"
+        "${current ? context.l10n.turnSuffix : ''}${busting ? ', bust' : ''}";
 
     return Semantics(
       label: label,
@@ -1170,11 +1171,12 @@ class _DartCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final value = round.darts[index];
     final isActive = !round.bust && round.dartsThrown == index;
-    final ordinal = "${index + 1}-р сум";
+    final ordinal = context.l10n.dartOrdinal(index + 1);
 
     if (value == null) {
       return Semantics(
-        label: isActive ? "$ordinal, дараагийнх" : "$ordinal, шидээгүй",
+        label:
+            "$ordinal, ${isActive ? context.l10n.dartUpNext : context.l10n.dartNotThrown}",
         excludeSemantics: true,
         child: Center(
           child: HugeIcon(
@@ -1189,7 +1191,7 @@ class _DartCell extends StatelessWidget {
     }
 
     final label = value == 0
-        ? "Алдсан"
+        ? context.l10n.miss
         : cricket
         ? CricketText.dartLabel(value, round.mults[index])
         : value.toString();
@@ -1209,7 +1211,7 @@ class _DartCell extends StatelessWidget {
           .scale(begin: const Offset(0.7, 0.7), duration: 150.ms);
     }
     return Semantics(
-      label: "$ordinal: ${value == 0 ? 'алдсан' : label}",
+      label: "$ordinal: ${value == 0 ? context.l10n.missLower : label}",
       excludeSemantics: true,
       child: Center(
         child: FittedBox(fit: BoxFit.scaleDown, child: text),
@@ -1455,7 +1457,7 @@ class _ControlsRow extends StatelessWidget {
       children: [
         Expanded(
           child: _ControlBtn(
-            semanticLabel: "Сүүлийн шидэлтийг буцаах",
+            semanticLabel: context.l10n.undoLastDart,
             color: canGoBack ? danger.withAlpha(30) : BColors().lighter,
             borderColor: canGoBack ? danger.withAlpha(80) : BColors().border,
             onTap: canGoBack ? onBack : null,
@@ -1472,12 +1474,12 @@ class _ControlsRow extends StatelessWidget {
             color: BColors().lighter,
             borderColor: BColors().border,
             onTap: onMiss,
-            child: BText("Алдсан", fontWeight: .w700),
+            child: BText(context.l10n.miss, fontWeight: .w700),
           ),
         ),
         Expanded(
           child: _ControlBtn(
-            semanticLabel: "Дараагийн тоглогч",
+            semanticLabel: context.l10n.nextPlayer,
             color: BColors().orange.withAlpha(30),
             borderColor: BColors().orange.withAlpha(80),
             onTap: onForward,
