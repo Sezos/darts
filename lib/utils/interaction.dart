@@ -1,6 +1,7 @@
 import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 extension MotionContext on BuildContext {
@@ -259,6 +260,66 @@ class IconAction extends StatelessWidget {
           color: color ?? BColors().textSecondary,
           size: 20,
         ),
+      ),
+    );
+  }
+}
+
+/// A row of equal-width options with one selected, like a segmented control.
+class SegmentedPicker<T> extends StatelessWidget {
+  const SegmentedPicker({
+    required this.options,
+    required this.selected,
+    required this.onSelect,
+    super.key,
+  });
+
+  /// Each option's value and the label shown for it, in order.
+  final Map<T, String> options;
+  final T selected;
+  final ValueChanged<T> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: BColors().background,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: BColors().border),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        children: options.entries.map((e) {
+          final isSelected = selected == e.key;
+          return Expanded(
+            child: Pressable(
+              selected: isSelected,
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onSelect(e.key);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isSelected ? BColors().primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: BText(
+                    e.value,
+                    fontWeight: .w800,
+                    color: isSelected
+                        ? BColors().background
+                        : BColors().textSecondary,
+                    size: .s,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

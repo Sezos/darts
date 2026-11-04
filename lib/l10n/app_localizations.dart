@@ -667,6 +667,318 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Auto'**
   String get languageAuto;
+
+  /// No description provided for @ranks.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranks'**
+  String get ranks;
+
+  /// No description provided for @tierRookie.
+  ///
+  /// In en, this message translates to:
+  /// **'Rookie'**
+  String get tierRookie;
+
+  /// No description provided for @tierPubThrower.
+  ///
+  /// In en, this message translates to:
+  /// **'Pub Thrower'**
+  String get tierPubThrower;
+
+  /// No description provided for @tierOcheRegular.
+  ///
+  /// In en, this message translates to:
+  /// **'Oche Regular'**
+  String get tierOcheRegular;
+
+  /// No description provided for @tierTrebleHunter.
+  ///
+  /// In en, this message translates to:
+  /// **'Treble Hunter'**
+  String get tierTrebleHunter;
+
+  /// No description provided for @tierCheckoutPro.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout Pro'**
+  String get tierCheckoutPro;
+
+  /// No description provided for @tierTonMachine.
+  ///
+  /// In en, this message translates to:
+  /// **'Ton Machine'**
+  String get tierTonMachine;
+
+  /// No description provided for @tierClub180.
+  ///
+  /// In en, this message translates to:
+  /// **'180 Club'**
+  String get tierClub180;
+
+  /// No description provided for @tierNineDarter.
+  ///
+  /// In en, this message translates to:
+  /// **'Nine-Darter'**
+  String get tierNineDarter;
+
+  /// No description provided for @placementProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement {done}/{total}'**
+  String placementProgress(int done, int total);
+
+  /// No description provided for @placementHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more game to get ranked} other{{count} more games to get ranked}}'**
+  String placementHint(int count);
+
+  /// No description provided for @ratingAvg.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} avg'**
+  String ratingAvg(String value);
+
+  /// No description provided for @ratingMpr.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} MPR'**
+  String ratingMpr(String value);
+
+  /// No description provided for @rankUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank up!'**
+  String get rankUp;
+
+  /// No description provided for @rankPlaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranked!'**
+  String get rankPlaced;
+
+  /// No description provided for @nextRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {rank}'**
+  String nextRank(String rank);
+
+  /// No description provided for @topRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Top rank'**
+  String get topRank;
+
+  /// No description provided for @ranksX01Hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rated on 3-dart average. Recent games count most.'**
+  String get ranksX01Hint;
+
+  /// No description provided for @ranksCricketHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rated on marks per round. Recent games count most.'**
+  String get ranksCricketHint;
+
+  /// No description provided for @unranked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unranked'**
+  String get unranked;
+
+  /// No description provided for @ranksEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No ranks yet'**
+  String get ranksEmpty;
+
+  /// No description provided for @ranksEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Players get a rank after {count} games.'**
+  String ranksEmptyHint(int count);
+
+  /// No description provided for @friends.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends'**
+  String get friends;
+
+  /// No description provided for @yourCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Your friend code'**
+  String get yourCode;
+
+  /// No description provided for @showQr.
+  ///
+  /// In en, this message translates to:
+  /// **'My QR'**
+  String get showQr;
+
+  /// No description provided for @addFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Add friend'**
+  String get addFriend;
+
+  /// No description provided for @scanQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code'**
+  String get scanQr;
+
+  /// No description provided for @enterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter code'**
+  String get enterCode;
+
+  /// No description provided for @codeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 7K2-QXP'**
+  String get codeHint;
+
+  /// No description provided for @codeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That doesn\'t look like a friend code'**
+  String get codeInvalid;
+
+  /// No description provided for @codeNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No player with that code'**
+  String get codeNotFound;
+
+  /// No description provided for @friendsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No friends yet'**
+  String get friendsEmpty;
+
+  /// No description provided for @friendsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show your QR to a friend, or scan theirs.'**
+  String get friendsEmptyHint;
+
+  /// No description provided for @qrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to add me'**
+  String get qrTitle;
+
+  /// No description provided for @qrHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends scan this with their phone camera or in DartScore.'**
+  String get qrHint;
+
+  /// No description provided for @shareLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Share link'**
+  String get shareLink;
+
+  /// No description provided for @shareText.
+  ///
+  /// In en, this message translates to:
+  /// **'Add me on DartScore: {link}'**
+  String shareText(String link);
+
+  /// No description provided for @you.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get you;
+
+  /// No description provided for @isYou.
+  ///
+  /// In en, this message translates to:
+  /// **'This is you'**
+  String get isYou;
+
+  /// No description provided for @friendAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added'**
+  String friendAdded(String name);
+
+  /// No description provided for @added.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get added;
+
+  /// No description provided for @removeFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove friend'**
+  String get removeFriend;
+
+  /// No description provided for @removeFriendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}?'**
+  String removeFriendTitle(String name);
+
+  /// No description provided for @removeFriendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll both disappear from each other\'s friends.'**
+  String get removeFriendMessage;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @onlineError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t connect. Check your internet and try again.'**
+  String get onlineError;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get retry;
+
+  /// No description provided for @onlineUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends aren\'t available on this device.'**
+  String get onlineUnavailable;
+
+  /// No description provided for @cameraDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is off. Allow it in Settings to scan.'**
+  String get cameraDenied;
+
+  /// No description provided for @scanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Point at a friend\'s DartScore QR code'**
+  String get scanHint;
+
+  /// No description provided for @notDartScoreQr.
+  ///
+  /// In en, this message translates to:
+  /// **'That isn\'t a DartScore QR code'**
+  String get notDartScoreQr;
+
+  /// No description provided for @friendsLeaderboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends leaderboard'**
+  String get friendsLeaderboard;
 }
 
 class _AppLocalizationsDelegate

@@ -1,9 +1,13 @@
 import 'package:darts/core/game.screen.dart';
 import 'package:darts/core/history.screen.dart';
 import 'package:darts/core/homescreen.dart';
+import 'package:darts/core/online/friend_profile.screen.dart';
+import 'package:darts/core/online/friends.screen.dart';
+import 'package:darts/core/online/scan.screen.dart';
 import 'package:darts/core/players.screen.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/game/ongoing_game.provider.dart';
+import 'package:darts/core/ranks.screen.dart';
 import 'package:darts/core/settings.screen.dart';
 import 'package:darts/core/stats.screen.dart';
 import 'package:go_router/go_router.dart';
@@ -40,6 +44,29 @@ final router = GoRouter(
       path: "/history",
       name: "history",
       builder: (context, state) => const HistoryScreen(),
+    ),
+    GoRoute(
+      path: "/ranks",
+      name: "ranks",
+      builder: (context, state) => const RanksScreen(),
+    ),
+    GoRoute(
+      path: "/friends",
+      name: "friends",
+      builder: (context, state) => const FriendsScreen(),
+    ),
+    GoRoute(
+      path: "/scan",
+      name: "scan",
+      builder: (context, state) => const ScanScreen(),
+    ),
+    // Profile links (`https://darts-onoo.web.app/f/7K2QXP`) land here too.
+    GoRoute(
+      path: "/f/:code",
+      name: "friend_profile",
+      builder: (context, state) => FriendProfileScreen(
+        state.pathParameters['code']!.toUpperCase(),
+      ),
     ),
     GoRoute(
       path: "/stats",

@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:confetti/confetti.dart';
 import 'package:darts/core/cricket_board.dart';
 import 'package:darts/core/game/cricket_engine.dart';
+import 'package:darts/core/game/skill_rating.dart';
 import 'package:darts/core/game/x01_engine.dart';
 import 'package:darts/core/helper/darts.helper.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/game/ongoing_game.provider.dart';
 import 'package:darts/core/providers/settings/settings.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
+import 'package:darts/core/rank_widgets.dart';
 import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/analytics.dart';
 import 'package:darts/utils/colors.dart';
@@ -57,7 +59,13 @@ class _FinalScore {
 
   /// Points left (x01) or points scored (Cricket), ready to show.
   final String value;
-  const _FinalScore(this.name, this.value);
+
+  /// The player's rating in this mode, counting this game.
+  final SkillRating rating;
+
+  /// The player threw in this game, so it moved [rating].
+  final bool counted;
+  const _FinalScore(this.name, this.value, this.rating, this.counted);
 }
 
 enum HapticType { light, medium, heavy }
@@ -268,6 +276,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     // Save first: the dialog may never be answered if the app is closed.
     ref.read(historyProvider.notifier).addGame(game);
     ref.read(ongoingGameProvider.notifier).clear();
+    final history = ref.read(historyProvider);
+    final ratings = {
+      for (final u in game.users)
+        u.id: skillRating(history, u.id, RatingMode.of(game)),
+    };
 
     _playWin();
     if (!context.reduceMotion) _confettiController.play();
@@ -290,6 +303,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             _isCricket
                 ? context.l10n.points(_cricket.points(u))
                 : '${_x01.remaining(u)}',
+            ratings[u.id]!,
+            ratings[u.id]!.countedIn(game),
           ),
       ],
       onNewGame: () => context.pushReplacement(
@@ -380,9 +395,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   children: finalScores
                       .map(
                         (e) => Row(
-                          mainAxisAlignment: .spaceBetween,
+                          spacing: 8,
                           children: [
-                            Flexible(
+                            RankBadge(e.rating.rank, size: 22),
+                            Expanded(
                               child: BComment(
                                 e.name,
                                 color: BColors().textSecondary,
@@ -390,6 +406,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            if (!e.counted)
+                              const SizedBox.shrink()
+                            else if (e.rating.isPlacement)
+                              BComment(
+                                '${e.rating.games}/$placementGames',
+                                color: BColors().textSecondary,
+                                size: .xs,
+                              )
+                            else
+                              RatingChange(e.rating),
                             BText(
                               e.value,
                               fontWeight: .w800,
@@ -401,6 +427,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                       .toList(),
                 ),
               ),
+              for (final e in finalScores)
+                if (e.counted && (e.rating.rankedUp || e.rating.justPlaced))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: _RankUpBanner(e),
+                  ),
               const SizedBox(height: 16),
               Row(
                 spacing: 10,
@@ -1616,5 +1648,61 @@ class _LandscapeNumberGrid extends StatelessWidget {
           ),
       ],
     );
+  }
+}
+
+/// "Rank up!" (or "Ranked!" after placement) with the new rank's badge.
+class _RankUpBanner extends StatelessWidget {
+  const _RankUpBanner(this.score);
+  final _FinalScore score;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final rank = score.rating.rank!;
+    final color = rank.tier.color;
+    final title = score.rating.justPlaced ? l10n.rankPlaced : l10n.rankUp;
+    final subtitle = '${score.name} · ${rank.label(l10n)}';
+    Widget banner = Semantics(
+      liveRegion: true,
+      label: '$title $subtitle',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color.withAlpha(25),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withAlpha(110)),
+        ),
+        child: Row(
+          spacing: 10,
+          children: [
+            RankBadge(rank, size: 36),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  BText(title, fontWeight: .w900, color: color),
+                  BComment(
+                    subtitle,
+                    color: BColors().textPrimary,
+                    size: .s,
+                    maxLine: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!context.reduceMotion) {
+      banner = banner
+          .animate()
+          .fadeIn(duration: 300.ms, delay: 250.ms)
+          .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack);
+    }
+    return banner;
   }
 }

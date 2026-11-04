@@ -1,3 +1,5 @@
+import 'package:darts/core/online/online.dart';
+import 'package:darts/core/online/online.provider.dart';
 import 'package:darts/core/providers/settings/settings.provider.dart';
 import 'package:darts/firebase_options.dart';
 import 'package:darts/l10n/l10n.dart';
@@ -30,6 +32,7 @@ void main() async {
     );
     Analytics.enable();
     Analytics.trackScreens(router);
+    await Online.init();
   } catch (e) {
     debugPrint('Firebase not configured, analytics disabled: $e');
   }
@@ -46,6 +49,7 @@ class MyApp extends ConsumerWidget {
     final language = ref.watch(
       settingsProvider.select((s) => s.language),
     );
+    ref.watch(profileSyncProvider);
     return MaterialApp.router(
       routerConfig: router,
       debugShowCheckedModeBanner: false,

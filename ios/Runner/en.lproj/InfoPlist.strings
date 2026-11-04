@@ -1,1 +1,2 @@
 "CFBundleDisplayName" = "DartScore";
+"NSCameraUsageDescription" = "Scan a friend's QR code to add them.";

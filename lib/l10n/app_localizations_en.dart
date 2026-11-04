@@ -339,4 +339,190 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageAuto => 'Auto';
+
+  @override
+  String get ranks => 'Ranks';
+
+  @override
+  String get tierRookie => 'Rookie';
+
+  @override
+  String get tierPubThrower => 'Pub Thrower';
+
+  @override
+  String get tierOcheRegular => 'Oche Regular';
+
+  @override
+  String get tierTrebleHunter => 'Treble Hunter';
+
+  @override
+  String get tierCheckoutPro => 'Checkout Pro';
+
+  @override
+  String get tierTonMachine => 'Ton Machine';
+
+  @override
+  String get tierClub180 => '180 Club';
+
+  @override
+  String get tierNineDarter => 'Nine-Darter';
+
+  @override
+  String placementProgress(int done, int total) {
+    return 'Placement $done/$total';
+  }
+
+  @override
+  String placementHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more games to get ranked',
+      one: '1 more game to get ranked',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String ratingAvg(String value) {
+    return '$value avg';
+  }
+
+  @override
+  String ratingMpr(String value) {
+    return '$value MPR';
+  }
+
+  @override
+  String get rankUp => 'Rank up!';
+
+  @override
+  String get rankPlaced => 'Ranked!';
+
+  @override
+  String nextRank(String rank) {
+    return 'Next: $rank';
+  }
+
+  @override
+  String get topRank => 'Top rank';
+
+  @override
+  String get ranksX01Hint =>
+      'Rated on 3-dart average. Recent games count most.';
+
+  @override
+  String get ranksCricketHint =>
+      'Rated on marks per round. Recent games count most.';
+
+  @override
+  String get unranked => 'Unranked';
+
+  @override
+  String get ranksEmpty => 'No ranks yet';
+
+  @override
+  String ranksEmptyHint(int count) {
+    return 'Players get a rank after $count games.';
+  }
+
+  @override
+  String get friends => 'Friends';
+
+  @override
+  String get yourCode => 'Your friend code';
+
+  @override
+  String get showQr => 'My QR';
+
+  @override
+  String get addFriend => 'Add friend';
+
+  @override
+  String get scanQr => 'Scan QR code';
+
+  @override
+  String get enterCode => 'Enter code';
+
+  @override
+  String get codeHint => 'e.g. 7K2-QXP';
+
+  @override
+  String get codeInvalid => 'That doesn\'t look like a friend code';
+
+  @override
+  String get codeNotFound => 'No player with that code';
+
+  @override
+  String get friendsEmpty => 'No friends yet';
+
+  @override
+  String get friendsEmptyHint => 'Show your QR to a friend, or scan theirs.';
+
+  @override
+  String get qrTitle => 'Scan to add me';
+
+  @override
+  String get qrHint =>
+      'Friends scan this with their phone camera or in DartScore.';
+
+  @override
+  String get shareLink => 'Share link';
+
+  @override
+  String shareText(String link) {
+    return 'Add me on DartScore: $link';
+  }
+
+  @override
+  String get you => 'You';
+
+  @override
+  String get isYou => 'This is you';
+
+  @override
+  String friendAdded(String name) {
+    return '$name added';
+  }
+
+  @override
+  String get added => 'Added';
+
+  @override
+  String get removeFriend => 'Remove friend';
+
+  @override
+  String removeFriendTitle(String name) {
+    return 'Remove $name?';
+  }
+
+  @override
+  String get removeFriendMessage =>
+      'You\'ll both disappear from each other\'s friends.';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get onlineError =>
+      'Couldn\'t connect. Check your internet and try again.';
+
+  @override
+  String get retry => 'Try again';
+
+  @override
+  String get onlineUnavailable => 'Friends aren\'t available on this device.';
+
+  @override
+  String get cameraDenied =>
+      'Camera access is off. Allow it in Settings to scan.';
+
+  @override
+  String get scanHint => 'Point at a friend\'s DartScore QR code';
+
+  @override
+  String get notDartScoreQr => 'That isn\'t a DartScore QR code';
+
+  @override
+  String get friendsLeaderboard => 'Friends leaderboard';
 }

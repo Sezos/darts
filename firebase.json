@@ -1,1 +1,51 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"darts-onoo","appId":"1:392300985513:android:6008be707b7b9617a33db8","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"darts-onoo","appId":"1:392300985513:ios:7f3cef795b3bfbc2a33db8","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"darts-onoo","configurations":{"android":"1:392300985513:android:6008be707b7b9617a33db8","ios":"1:392300985513:ios:7f3cef795b3bfbc2a33db8"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "darts-onoo",
+          "appId": "1:392300985513:android:6008be707b7b9617a33db8",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "darts-onoo",
+          "appId": "1:392300985513:ios:7f3cef795b3bfbc2a33db8",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "darts-onoo",
+          "configurations": {
+            "android": "1:392300985513:android:6008be707b7b9617a33db8",
+            "ios": "1:392300985513:ios:7f3cef795b3bfbc2a33db8"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "location": "asia-east2",
+    "rules": "firestore.rules"
+  },
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  },
+  "auth": {
+    "providers": {
+      "anonymous": true
+    }
+  }
+}

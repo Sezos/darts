@@ -110,6 +110,12 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                           ),
                           const Spacer(),
                           IconTile(
+                            icon: HugeIcons.strokeRoundedUserGroup,
+                            label: context.l10n.friends,
+                            onTap: () => context.push("/friends"),
+                          ),
+                          const SizedBox(width: 10),
+                          IconTile(
                             icon: HugeIcons.strokeRoundedSettings01,
                             label: context.l10n.settings,
                             onTap: () => context.push("/settings"),
@@ -195,6 +201,12 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                               icon: HugeIcons.strokeRoundedPlay,
                               onTap: () => context.push("/players"),
                             ),
+                          ),
+                          IconTile(
+                            icon: HugeIcons.strokeRoundedRanking,
+                            label: context.l10n.ranks,
+                            size: 52,
+                            onTap: () => context.push("/ranks"),
                           ),
                           IconTile(
                             icon: HugeIcons.strokeRoundedClock04,

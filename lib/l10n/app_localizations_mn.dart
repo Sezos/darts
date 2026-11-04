@@ -336,4 +336,190 @@ class AppLocalizationsMn extends AppLocalizations {
 
   @override
   String get languageAuto => 'Автомат';
+
+  @override
+  String get ranks => 'Зэрэглэл';
+
+  @override
+  String get tierRookie => 'Rookie';
+
+  @override
+  String get tierPubThrower => 'Pub Thrower';
+
+  @override
+  String get tierOcheRegular => 'Oche Regular';
+
+  @override
+  String get tierTrebleHunter => 'Treble Hunter';
+
+  @override
+  String get tierCheckoutPro => 'Checkout Pro';
+
+  @override
+  String get tierTonMachine => 'Ton Machine';
+
+  @override
+  String get tierClub180 => '180 Club';
+
+  @override
+  String get tierNineDarter => 'Nine-Darter';
+
+  @override
+  String placementProgress(int done, int total) {
+    return 'Зэрэглэл тогтоох $done/$total';
+  }
+
+  @override
+  String placementHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Зэрэглэл авахад $count тоглолт дутуу',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String ratingAvg(String value) {
+    return '$value дундаж';
+  }
+
+  @override
+  String ratingMpr(String value) {
+    return '$value MPR';
+  }
+
+  @override
+  String get rankUp => 'Зэрэглэл ахилаа!';
+
+  @override
+  String get rankPlaced => 'Зэрэглэл авлаа!';
+
+  @override
+  String nextRank(String rank) {
+    return 'Дараагийнх: $rank';
+  }
+
+  @override
+  String get topRank => 'Хамгийн дээд зэрэглэл';
+
+  @override
+  String get ranksX01Hint =>
+      '3 сумны дунджаар тооцно. Сүүлийн тоглолтууд илүү нөлөөтэй.';
+
+  @override
+  String get ranksCricketHint =>
+      'Раунд тутмын тэмдгээр (MPR) тооцно. Сүүлийн тоглолтууд илүү нөлөөтэй.';
+
+  @override
+  String get unranked => 'Зэрэглэлгүй';
+
+  @override
+  String get ranksEmpty => 'Зэрэглэл алга';
+
+  @override
+  String ranksEmptyHint(int count) {
+    return '$count тоглолтын дараа зэрэглэл авна.';
+  }
+
+  @override
+  String get friends => 'Найзууд';
+
+  @override
+  String get yourCode => 'Таны найзын код';
+
+  @override
+  String get showQr => 'Миний QR';
+
+  @override
+  String get addFriend => 'Найз нэмэх';
+
+  @override
+  String get scanQr => 'QR код уншуулах';
+
+  @override
+  String get enterCode => 'Код оруулах';
+
+  @override
+  String get codeHint => 'Жишээ нь: 7K2-QXP';
+
+  @override
+  String get codeInvalid => 'Найзын код буруу байна';
+
+  @override
+  String get codeNotFound => 'Ийм кодтой тоглогч алга';
+
+  @override
+  String get friendsEmpty => 'Найз алга';
+
+  @override
+  String get friendsEmptyHint =>
+      'Найздаа QR-ээ үзүүл, эсвэл түүнийхийг уншуул.';
+
+  @override
+  String get qrTitle => 'Намайг нэмэхийн тулд уншуул';
+
+  @override
+  String get qrHint =>
+      'Найзууд чинь утасныхаа камер эсвэл DartScore-оор уншуулна.';
+
+  @override
+  String get shareLink => 'Холбоос хуваалцах';
+
+  @override
+  String shareText(String link) {
+    return 'DartScore дээр намайг нэмээрэй: $link';
+  }
+
+  @override
+  String get you => 'Та';
+
+  @override
+  String get isYou => 'Энэ бол та';
+
+  @override
+  String friendAdded(String name) {
+    return '$name нэмэгдлээ';
+  }
+
+  @override
+  String get added => 'Нэмсэн';
+
+  @override
+  String get removeFriend => 'Найзаас хасах';
+
+  @override
+  String removeFriendTitle(String name) {
+    return '$name-г хасах уу?';
+  }
+
+  @override
+  String get removeFriendMessage =>
+      'Та хоёр бие биеийнхээ найзын жагсаалтаас хасагдана.';
+
+  @override
+  String get remove => 'Хасах';
+
+  @override
+  String get onlineError =>
+      'Холбогдож чадсангүй. Интернетээ шалгаад дахин оролдоно уу.';
+
+  @override
+  String get retry => 'Дахин оролдох';
+
+  @override
+  String get onlineUnavailable => 'Энэ төхөөрөмж дээр найзын хэсэг ажиллахгүй.';
+
+  @override
+  String get cameraDenied =>
+      'Камерын зөвшөөрөл хаалттай. Уншуулахын тулд Тохиргооноос зөвшөөрнө үү.';
+
+  @override
+  String get scanHint => 'Найзынхаа DartScore QR код руу чиглүүл';
+
+  @override
+  String get notDartScoreQr => 'Энэ DartScore-ын QR код биш байна';
+
+  @override
+  String get friendsLeaderboard => 'Найзуудын зэрэглэл';
 }

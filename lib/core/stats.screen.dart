@@ -1,5 +1,7 @@
 import 'package:darts/core/game/cricket_engine.dart';
+import 'package:darts/core/game/skill_rating.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
+import 'package:darts/core/rank_widgets.dart';
 import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/text_styles.dart';
@@ -173,6 +175,15 @@ class StatsScreen extends ConsumerWidget {
                 ],
               ),
             ),
+
+            // Skill rank in each mode the player has played
+            for (final (mode, title) in [
+              (RatingMode.x01, 'x01'),
+              (RatingMode.cricket, 'Cricket'),
+            ])
+              if (skillRating(allGames, userId, mode) case final r
+                  when r.games > 0)
+                RankCard(r, title: title),
 
             // Win/loss row
             Row(

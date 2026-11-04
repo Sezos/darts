@@ -6,7 +6,6 @@ import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/snackbar.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -180,7 +179,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     icon: HugeIcons.strokeRoundedLanguageSkill,
                     title: context.l10n.language,
                     children: [
-                      _LanguageSelector(
+                      // Language names are written in their own language so
+                      // a player can find theirs whatever the UI shows.
+                      SegmentedPicker(
+                        options: {
+                          AppLanguage.auto: context.l10n.languageAuto,
+                          AppLanguage.en: 'English',
+                          AppLanguage.mn: 'Монгол',
+                        },
                         selected: settings.language,
                         onSelect: (l) =>
                             ref.read(settingsProvider.notifier).setLanguage(l),
@@ -297,64 +303,6 @@ class _ToggleRow extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Auto / English / Монгол. Language names are written in their own
-/// language so a player can find theirs whatever the UI is showing.
-class _LanguageSelector extends StatelessWidget {
-  const _LanguageSelector({required this.selected, required this.onSelect});
-  final AppLanguage selected;
-  final ValueChanged<AppLanguage> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    final options = {
-      AppLanguage.auto: context.l10n.languageAuto,
-      AppLanguage.en: 'English',
-      AppLanguage.mn: 'Монгол',
-    };
-    return Container(
-      decoration: BoxDecoration(
-        color: BColors().background,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: BColors().border),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Row(
-        children: options.entries.map((e) {
-          final isSelected = selected == e.key;
-          return Expanded(
-            child: Pressable(
-              selected: isSelected,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                onSelect(e.key);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOut,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: isSelected ? BColors().primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: BText(
-                    e.value,
-                    fontWeight: .w800,
-                    color: isSelected
-                        ? BColors().background
-                        : BColors().textSecondary,
-                    size: .s,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

@@ -1,0 +1,265 @@
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:darts/core/game/skill_rating.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+/// Online profiles and friends, on Firebase Auth and Firestore.
+///
+/// Only the phone's owner (local user id 0) goes online; other players saved
+/// on the phone stay local. An anonymous account is made the first time the
+/// owner opens Friends or a friend's link.
+///
+/// Firestore layout (rules in `firestore.rules`):
+///   profiles/{uid}                    name, code and ratings; any signed-in
+///                                     user can read one, nobody can list them
+///   codes/{code}                      { uid }: turns a friend code into a uid
+///   profiles/{uid}/friends/{uid2}     uid's friends, readable only by uid
+abstract final class Online {
+  static FirebaseAuth get _auth => FirebaseAuth.instance;
+  static FirebaseFirestore get _db => FirebaseFirestore.instance;
+
+  /// Firebase started; everything here is off until [init] runs.
+  static bool available = false;
+
+  /// Debug builds run with `--dart-define=USE_FIREBASE_EMULATORS=true` talk
+  /// to the local emulators (`firebase emulators:start`) instead.
+  static const _useEmulators = bool.fromEnvironment('USE_FIREBASE_EMULATORS');
+
+  /// Call once after `Firebase.initializeApp()` succeeds.
+  static Future<void> init() async {
+    if (_useEmulators) {
+      await _auth.useAuthEmulator('localhost', 9099);
+      _db.useFirestoreEmulator('localhost', 8080);
+    }
+    available = true;
+  }
+
+  static DocumentReference<Map<String, dynamic>> _profile(String uid) =>
+      _db.collection('profiles').doc(uid);
+  static DocumentReference<Map<String, dynamic>> _code(String code) =>
+      _db.collection('codes').doc(code);
+  static CollectionReference<Map<String, dynamic>> _friends(String uid) =>
+      _profile(uid).collection('friends');
+
+  static String? get uid => _auth.currentUser?.uid;
+
+  static var _verified = false;
+
+  /// Signs in anonymously unless already signed in.
+  ///
+  /// A saved sign-in is checked with the server once per run: if its account
+  /// no longer exists (deleted, or made on the emulators by a debug build),
+  /// Firestore would retry it forever, so start a fresh account instead.
+  static Future<String> signIn() async {
+    var current = _auth.currentUser;
+    if (current != null && !_verified) {
+      try {
+        await current.reload();
+      } on FirebaseAuthException catch (e) {
+        if (!_goneAccountCodes.contains(e.code)) rethrow;
+        await _auth.signOut();
+        current = null;
+      }
+    }
+    current ??= (await _auth.signInAnonymously()).user!;
+    _verified = true;
+    return current.uid;
+  }
+
+  static const _goneAccountCodes = {
+    'user-not-found',
+    'user-disabled',
+    'user-token-expired',
+    'invalid-user-token',
+  };
+
+  /// The signed-in owner's profile, created with a fresh friend code the
+  /// first time. [name] and the ratings are what to publish right now.
+  static Future<OnlineProfile> ensureProfile({
+    required String name,
+    required SkillRating x01,
+    required SkillRating cricket,
+  }) async {
+    final me = await signIn();
+    final existing = await _profile(me).get();
+    if (existing.exists) {
+      final profile = OnlineProfile.fromDoc(existing);
+      return profile.sameAs(name, x01, cricket)
+          ? profile
+          : await publish(name: name, x01: x01, cricket: cricket);
+    }
+    for (var attempt = 0; attempt < 5; attempt++) {
+      final code = newCode();
+      final created = await _db.runTransaction((tx) async {
+        if ((await tx.get(_code(code))).exists) return false;
+        tx.set(_code(code), {'uid': me});
+        tx.set(_profile(me), {
+          'name': name,
+          'code': code,
+          'x01': OnlineRating.of(x01).toMap(),
+          'cricket': OnlineRating.of(cricket).toMap(),
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        return true;
+      });
+      if (created) {
+        return OnlineProfile(
+          uid: me,
+          name: name,
+          code: code,
+          x01: OnlineRating.of(x01),
+          cricket: OnlineRating.of(cricket),
+        );
+      }
+    }
+    throw StateError('No free friend code after 5 tries');
+  }
+
+  /// Pushes the owner's current name and ratings to their profile.
+  static Future<OnlineProfile> publish({
+    required String name,
+    required SkillRating x01,
+    required SkillRating cricket,
+  }) async {
+    final me = uid!;
+    await _profile(me).update({
+      'name': name,
+      'x01': OnlineRating.of(x01).toMap(),
+      'cricket': OnlineRating.of(cricket).toMap(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    return OnlineProfile.fromDoc(await _profile(me).get());
+  }
+
+  static Future<OnlineProfile?> profile(String uid) async {
+    final doc = await _profile(uid).get();
+    return doc.exists ? OnlineProfile.fromDoc(doc) : null;
+  }
+
+  static Future<OnlineProfile?> profileByCode(String code) async {
+    final doc = await _code(code).get();
+    if (!doc.exists) return null;
+    final p = await profile(doc.data()!['uid'] as String);
+    // A stale code doc could point at a profile that has moved on.
+    return p?.code == code ? p : null;
+  }
+
+  /// The owner's friends' uids, live.
+  static Stream<Set<String>> friendIds() => _friends(
+    uid!,
+  ).snapshots().map((s) => {for (final d in s.docs) d.id});
+
+  /// Adds [friend] to the owner's friends and the owner to theirs.
+  ///
+  /// Friend docs can't be updated, so a half left over from an earlier add
+  /// would fail the batch; clear both halves first, then write them fresh.
+  static Future<void> addFriend(String friend) async {
+    final me = uid!;
+    await removeFriend(friend);
+    final batch = _db.batch()
+      ..set(_friends(me).doc(friend), {
+        'addedAt': FieldValue.serverTimestamp(),
+      })
+      ..set(_friends(friend).doc(me), {
+        'addedAt': FieldValue.serverTimestamp(),
+      });
+    await batch.commit();
+  }
+
+  /// Unfriends both ways.
+  static Future<void> removeFriend(String friend) async {
+    final me = uid!;
+    final batch = _db.batch()
+      ..delete(_friends(me).doc(friend))
+      ..delete(_friends(friend).doc(me));
+    await batch.commit();
+  }
+
+  /// Friend codes avoid characters that are easy to misread: 0/O and 1/I.
+  static const _alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  static final _random = Random.secure();
+
+  static String newCode() => String.fromCharCodes([
+    for (var i = 0; i < 6; i++)
+      _alphabet.codeUnitAt(_random.nextInt(_alphabet.length)),
+  ]);
+
+  /// The friend code in a scanned QR or typed text: a profile link
+  /// (`…/f/7K2QXP`) or the bare code, any case, spaces and dashes ignored.
+  static String? parseCode(String text) {
+    final t = text.trim();
+    final fromLink = RegExp(r'/f/([A-Za-z0-9]{6})/?$').firstMatch(t)?.group(1);
+    final code = (fromLink ?? t).replaceAll(RegExp(r'[\s-]'), '').toUpperCase();
+    return RegExp('^[$_alphabet]{6}\$').hasMatch(code) ? code : null;
+  }
+
+  /// The link a profile's QR code holds. It opens the app straight to the
+  /// profile once app links are set up, and a store page otherwise.
+  static String linkFor(String code) => 'https://darts-onoo.web.app/f/$code';
+
+  /// "7K2-QXP": easier to read out than six characters in a row.
+  static String display(String code) =>
+      '${code.substring(0, 3)}-${code.substring(3)}';
+}
+
+/// A published rating: just what friends need to see a rank.
+class OnlineRating {
+  const OnlineRating({required this.value, required this.games});
+  final double? value;
+  final int games;
+
+  factory OnlineRating.of(SkillRating r) =>
+      OnlineRating(value: r.value, games: r.games);
+
+  factory OnlineRating.fromMap(Object? map) {
+    final m = map is Map ? map : const {};
+    return OnlineRating(
+      value: (m['value'] as num?)?.toDouble(),
+      games: (m['games'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  Map<String, Object?> toMap() => {'value': value, 'games': games};
+
+  SkillRating toSkill(RatingMode mode) =>
+      SkillRating(mode: mode, games: games, value: value);
+}
+
+class OnlineProfile {
+  const OnlineProfile({
+    required this.uid,
+    required this.name,
+    required this.code,
+    required this.x01,
+    required this.cricket,
+  });
+
+  final String uid;
+  final String name;
+  final String code;
+  final OnlineRating x01;
+  final OnlineRating cricket;
+
+  factory OnlineProfile.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final d = doc.data()!;
+    return OnlineProfile(
+      uid: doc.id,
+      name: d['name'] as String? ?? '',
+      code: d['code'] as String? ?? '',
+      x01: OnlineRating.fromMap(d['x01']),
+      cricket: OnlineRating.fromMap(d['cricket']),
+    );
+  }
+
+  SkillRating rating(RatingMode mode) =>
+      mode == RatingMode.x01 ? x01.toSkill(mode) : cricket.toSkill(mode);
+
+  bool sameAs(String name, SkillRating x01, SkillRating cricket) =>
+      this.name == name &&
+      this.x01.value == x01.value &&
+      this.x01.games == x01.games &&
+      this.cricket.value == cricket.value &&
+      this.cricket.games == cricket.games;
+}

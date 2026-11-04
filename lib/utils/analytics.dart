@@ -137,6 +137,15 @@ class Analytics {
   static Future<void> adFailedToLoad(String adUnit, int code) =>
       _log('ad_failed_to_load', {'ad_unit': adUnit, 'error_code': code});
 
+  // ── Friends ────────────────────────────────────────────────────────────────
+
+  static Future<void> qrShown() => _log('qr_shown');
+  static Future<void> qrScanned() => _log('qr_scanned');
+  static Future<void> friendCodeEntered() => _log('friend_code_entered');
+  static Future<void> friendProfileViewed() => _log('friend_profile_viewed');
+  static Future<void> friendAdded() => _log('friend_added');
+  static Future<void> friendRemoved() => _log('friend_removed');
+
   // ── User properties ────────────────────────────────────────────────────────
 
   /// [languageSetting] is the Settings choice ("auto", "en", "mn");
