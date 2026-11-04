@@ -979,6 +979,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Friends leaderboard'**
   String get friendsLeaderboard;
+
+  /// No description provided for @saveProgressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your progress'**
+  String get saveProgressTitle;
+
+  /// No description provided for @saveProgressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in so your rank, friends and games survive a new phone.'**
+  String get saveProgressHint;
+
+  /// No description provided for @signInApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple'**
+  String get signInApple;
+
+  /// No description provided for @signInGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get signInGoogle;
+
+  /// No description provided for @signedInWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in with {provider}'**
+  String signedInWith(String provider);
+
+  /// No description provided for @signInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sign in. Try again.'**
+  String get signInFailed;
+
+  /// No description provided for @accountRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back! Your games are restored.'**
+  String get accountRestored;
+
+  /// No description provided for @onlineAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Online account'**
+  String get onlineAccount;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete online account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes your profile, friends and backups'**
+  String get deleteAccountHint;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your online account?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile, friends and backed-up games are removed for good. Games on this phone stay.'**
+  String get deleteAccountMessage;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Online account deleted'**
+  String get accountDeleted;
 }
 
 class _AppLocalizationsDelegate

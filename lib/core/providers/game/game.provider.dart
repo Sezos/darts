@@ -99,6 +99,19 @@ class HistoryNotifier extends _$HistoryNotifier {
     saveState();
   }
 
+  /// Adds games from an online backup that aren't on this phone yet, in
+  /// play order. A game's start time identifies it.
+  void mergeBackup(List<Game> games) {
+    final have = {for (final g in state) g.date.microsecondsSinceEpoch};
+    final missing = [
+      for (final g in games)
+        if (!have.contains(g.date.microsecondsSinceEpoch)) g,
+    ];
+    if (missing.isEmpty) return;
+    state = [...state, ...missing]..sort((a, b) => a.date.compareTo(b.date));
+    saveState();
+  }
+
   void saveState([List<Game>? list]) {
     storage.write(key, (list ?? state).map((e) => e.toJson()).toList());
   }

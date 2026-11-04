@@ -45,7 +45,39 @@
   },
   "auth": {
     "providers": {
-      "anonymous": true
+      "anonymous": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "DartScore",
+        "supportEmail": "b4dral@gmail.com",
+        "authorizedRedirectUris": [
+          "https://darts-onoo.firebaseapp.com/__/auth/handler"
+        ]
+      }
     }
+  },
+  "hosting": {
+    "public": "hosting",
+    "ignore": [
+      "firebase.json",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "/f/**",
+        "destination": "/f.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/.well-known/apple-app-site-association",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    ]
   }
 }

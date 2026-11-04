@@ -1,7 +1,10 @@
 import 'dart:math';
 
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:darts/core/game/skill_rating.dart';
+import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Online profiles and friends, on Firebase Auth and Firestore.
@@ -15,6 +18,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 ///                                     user can read one, nobody can list them
 ///   codes/{code}                      { uid }: turns a friend code into a uid
 ///   profiles/{uid}/friends/{uid2}     uid's friends, readable only by uid
+///   profiles/{uid}/games/{id}         private backup of the owner's games,
+///                                     so ranks survive a reinstall (the iOS
+///                                     keychain keeps the sign-in) or, once
+///                                     linked to Apple or Google, a new phone
 abstract final class Online {
   static FirebaseAuth get _auth => FirebaseAuth.instance;
   static FirebaseFirestore get _db => FirebaseFirestore.instance;
@@ -41,6 +48,8 @@ abstract final class Online {
       _db.collection('codes').doc(code);
   static CollectionReference<Map<String, dynamic>> _friends(String uid) =>
       _profile(uid).collection('friends');
+  static CollectionReference<Map<String, dynamic>> _games(String uid) =>
+      _profile(uid).collection('games');
 
   static String? get uid => _auth.currentUser?.uid;
 
@@ -52,19 +61,41 @@ abstract final class Online {
   /// no longer exists (deleted, or made on the emulators by a debug build),
   /// Firestore would retry it forever, so start a fresh account instead.
   static Future<String> signIn() async {
-    var current = _auth.currentUser;
-    if (current != null && !_verified) {
-      try {
-        await current.reload();
-      } on FirebaseAuthException catch (e) {
-        if (!_goneAccountCodes.contains(e.code)) rethrow;
-        await _auth.signOut();
-        current = null;
-      }
-    }
-    current ??= (await _auth.signInAnonymously()).user!;
+    final current =
+        await _savedUser() ?? (await _auth.signInAnonymously()).user!;
     _verified = true;
     return current.uid;
+  }
+
+  /// The saved sign-in once checked with the server, or null when there is
+  /// none (or its account is gone). Never creates an account.
+  static Future<User?> _savedUser() async {
+    final current = _auth.currentUser;
+    if (current == null || _verified) return current;
+    try {
+      await current.reload();
+    } on FirebaseAuthException catch (e) {
+      if (!_goneAccountCodes.contains(e.code)) rethrow;
+      await _auth.signOut();
+      return null;
+    }
+    _verified = true;
+    return current;
+  }
+
+  /// Republishes the owner's name and ratings if they're already online.
+  /// Unlike [ensureProfile], never signs in or creates anything.
+  static Future<void> syncIfSignedIn({
+    required String name,
+    required SkillRating x01,
+    required SkillRating cricket,
+  }) async {
+    if (await _savedUser() case final user?) {
+      final doc = await _profile(user.uid).get();
+      if (!doc.exists) return;
+      if (OnlineProfile.fromDoc(doc).sameAs(name, x01, cricket)) return;
+      await publish(name: name, x01: x01, cricket: cricket);
+    }
   }
 
   static const _goneAccountCodes = {
@@ -177,6 +208,131 @@ abstract final class Online {
     await batch.commit();
   }
 
+  // ── Accounts ─────────────────────────────────────────────────────────────
+
+  /// Signed in with Apple or Google, so the account survives a reinstall.
+  static bool get isLinked => _auth.currentUser?.isAnonymous == false;
+
+  /// "apple.com" or "google.com" once linked.
+  static String? get linkedProvider {
+    final providers = _auth.currentUser?.providerData ?? const [];
+    return providers.isEmpty ? null : providers.first.providerId;
+  }
+
+  /// Ties the owner's anonymous account to Apple or Google.
+  ///
+  /// When that Apple or Google login already has a DartScore account (an
+  /// earlier phone, or a reinstall), the anonymous one is deleted and the
+  /// app switches to the existing account: returns [LinkResult.switched], and
+  /// the caller restores its games.
+  static Future<LinkResult> link(AuthProvider provider) async {
+    await signIn();
+    final user = _auth.currentUser!;
+    try {
+      await user.linkWithProvider(provider);
+      return LinkResult.linked;
+    } on FirebaseAuthException catch (e) {
+      final existing = e.credential;
+      if (e.code != 'credential-already-in-use' || existing == null) rethrow;
+      await _deleteData(user.uid);
+      await user.delete();
+      await _auth.signInWithCredential(existing);
+      return LinkResult.switched;
+    }
+  }
+
+  /// Removes the owner's profile, friend links (both ways), backups and
+  /// Auth account. Games on the phone stay. The next visit to Friends starts
+  /// a fresh anonymous account.
+  static Future<void> deleteAccount(AuthProvider? reauthWith) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    await _deleteData(user.uid);
+    try {
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      if (e.code != 'requires-recent-login' || reauthWith == null) rethrow;
+      await user.reauthenticateWithProvider(reauthWith);
+      await user.delete();
+    }
+    _verified = false;
+  }
+
+  static Future<void> _deleteData(String me) async {
+    final refs = <DocumentReference>[];
+    for (final f in (await _friends(me).get()).docs) {
+      refs
+        ..add(_friends(f.id).doc(me))
+        ..add(f.reference);
+    }
+    refs.addAll((await _games(me).get()).docs.map((d) => d.reference));
+    final profile = await _profile(me).get();
+    if (profile.exists) {
+      // Code and profile go together so the code can't point at nothing.
+      refs
+        ..add(_code(profile.data()!['code'] as String))
+        ..add(profile.reference);
+    }
+    await _commitDeletes(refs);
+  }
+
+  // ── Game backup ──────────────────────────────────────────────────────────
+
+  /// One backup doc per game; a game's start time is unique on a phone.
+  static String gameId(Game game) => '${game.date.microsecondsSinceEpoch}';
+
+  /// Uploads [games] to the owner's backup, once they're online.
+  static Future<void> backUp(Iterable<Game> games) async {
+    final me = uid;
+    if (me == null || pauseBackup) return;
+    final list = games.toList();
+    for (var i = 0; i < list.length; i += _batchLimit) {
+      final batch = _db.batch();
+      for (final g in list.skip(i).take(_batchLimit)) {
+        batch.set(_games(me).doc(gameId(g)), {
+          'json': jsonEncode(g.toJson()),
+          'playedAt': Timestamp.fromDate(g.date),
+        });
+      }
+      await batch.commit();
+    }
+  }
+
+  /// Set while restored games are merged in, so they aren't uploaded again.
+  static var pauseBackup = false;
+
+  static Future<void> deleteBackups(Iterable<String> ids) async {
+    final me = uid;
+    if (me == null || ids.isEmpty) return;
+    await _commitDeletes([for (final id in ids) _games(me).doc(id)]);
+  }
+
+  /// Fires when the owner signs in, links Apple or Google, or is deleted.
+  static Stream<User?> userChanges() => _auth.userChanges();
+
+  /// Every backed-up game, oldest first; none when not online.
+  static Future<List<Game>> backedUpGames() async {
+    final user = await _savedUser();
+    if (user == null) return const [];
+    final docs = (await _games(user.uid).orderBy('playedAt').get()).docs;
+    return [
+      for (final d in docs)
+        Game.fromJson(jsonDecode(d.data()['json'] as String)),
+    ];
+  }
+
+  static const _batchLimit = 400;
+
+  static Future<void> _commitDeletes(List<DocumentReference> refs) async {
+    for (var i = 0; i < refs.length; i += _batchLimit) {
+      final batch = _db.batch();
+      for (final r in refs.skip(i).take(_batchLimit)) {
+        batch.delete(r);
+      }
+      await batch.commit();
+    }
+  }
+
   /// Friend codes avoid characters that are easy to misread: 0/O and 1/I.
   static const _alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
   static final _random = Random.secure();
@@ -202,6 +358,14 @@ abstract final class Online {
   /// "7K2-QXP": easier to read out than six characters in a row.
   static String display(String code) =>
       '${code.substring(0, 3)}-${code.substring(3)}';
+}
+
+enum LinkResult {
+  /// The anonymous account now has Apple or Google attached.
+  linked,
+
+  /// That login already had an account; the app is now signed in to it.
+  switched,
 }
 
 /// A published rating: just what friends need to see a rank.

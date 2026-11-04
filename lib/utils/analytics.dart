@@ -146,6 +146,12 @@ class Analytics {
   static Future<void> friendAdded() => _log('friend_added');
   static Future<void> friendRemoved() => _log('friend_removed');
 
+  /// [provider] is "apple.com" or "google.com".
+  static Future<void> accountLinked(String provider) =>
+      _log('account_linked', {'provider': provider});
+  static Future<void> accountSwitched() => _log('account_switched');
+  static Future<void> accountDeleted() => _log('account_deleted');
+
   // ── User properties ────────────────────────────────────────────────────────
 
   /// [languageSetting] is the Settings choice ("auto", "en", "mn");

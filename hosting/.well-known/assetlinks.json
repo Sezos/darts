@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "mn.badral.darts",
+      "sha256_cert_fingerprints": [
+        "68:26:63:1A:0F:0A:3D:FA:5B:19:BC:35:03:A4:53:3B:44:2D:04:A5:D6:DA:3E:70:E3:24:F1:9D:52:A4:70:E6",
+        "49:5B:3C:E5:5D:98:44:4C:8B:E0:DB:43:64:BE:B6:51:BE:DA:4D:60:0C:E8:34:50:4E:1E:0E:E5:0E:71:9B:10"
+      ]
+    }
+  }
+]

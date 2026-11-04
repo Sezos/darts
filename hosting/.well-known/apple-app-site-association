@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["M3GU752FHV.mn.badral.darts"],
+        "components": [{ "/": "/f/*", "comment": "Friend profile links from QR codes" }]
+      }
+    ]
+  }
+}

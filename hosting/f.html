@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DartScore friend invite</title>
+<meta name="description" content="Add a friend on DartScore, the darts scorekeeper with skill ranks.">
+<meta name="theme-color" content="#080F0C">
+<style>
+  :root {
+    --bg: #080F0C; --surface: #0D1F17; --border: #1D3D2D;
+    --mint: #00E896; --text: #ECFDF7; --muted: #7AA896;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 0%, #0f2c1f 0%, var(--bg) 60%);
+    color: var(--text); font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 24px 16px;
+  }
+  main {
+    width: 100%; max-width: 420px; text-align: center; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 24px; padding: 32px 24px;
+  }
+  .brand { font-weight: 900; font-size: 28px; letter-spacing: -0.5px; margin: 0 0 4px; }
+  .brand span { color: var(--mint); }
+  p { color: var(--muted); margin: 0 0 20px; }
+  .code {
+    display: inline-block; font-weight: 900; font-size: 32px; letter-spacing: 6px;
+    padding: 10px 18px; border: 1px dashed var(--border); border-radius: 14px; margin-bottom: 20px;
+  }
+  a.btn {
+    display: block; text-decoration: none; font-weight: 800; border-radius: 14px;
+    padding: 14px; margin-top: 10px; border: 1px solid var(--border); color: var(--text);
+  }
+  a.btn.primary { background: var(--mint); color: var(--bg); border-color: var(--mint); }
+  .hint { font-size: 14px; margin-top: 20px; margin-bottom: 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1 class="brand">Dart<span>Score</span></h1>
+  <p id="lead">A friend wants to add you on DartScore.</p>
+  <div class="code" id="code" aria-label="Friend code"></div>
+  <a class="btn primary" id="open" href="#">Open in DartScore</a>
+  <a class="btn" id="ios" href="https://apps.apple.com/app/id6757249203">App Store</a>
+  <a class="btn" id="android" href="https://play.google.com/store/apps/details?id=mn.badral.darts">Google Play</a>
+  <p class="hint" id="hint">After installing, open Friends → Add friend → Enter code.</p>
+</main>
+<script>
+  // The code is the last path segment: /f/7K2QXP
+  var raw = (location.pathname.split('/').filter(Boolean)[1] || '').toUpperCase();
+  var code = /^[2-9A-HJ-NP-Z]{6}$/.test(raw) ? raw : '';
+  var codeEl = document.getElementById('code');
+  if (code) codeEl.textContent = code.slice(0, 3) + '-' + code.slice(3);
+  else codeEl.style.display = 'none';
+
+  var ua = navigator.userAgent;
+  var isAndroid = /Android/i.test(ua);
+  var isIOS = /iPhone|iPad|iPod/i.test(ua);
+  var open = document.getElementById('open');
+  if (isAndroid && code) {
+    // Opens the app when installed, otherwise Google Play.
+    open.href = 'intent://darts-onoo.web.app/f/' + code +
+      '#Intent;scheme=https;package=mn.badral.darts;end';
+  } else {
+    open.style.display = 'none';
+  }
+  if (isAndroid) document.getElementById('ios').style.display = 'none';
+  if (isIOS) document.getElementById('android').style.display = 'none';
+
+  if ((navigator.language || '').toLowerCase().indexOf('mn') === 0) {
+    document.documentElement.lang = 'mn';
+    document.getElementById('lead').textContent = 'Найз тань таныг DartScore дээр нэмэхийг хүсэж байна.';
+    open.textContent = 'DartScore-оор нээх';
+    document.getElementById('hint').textContent =
+      'Суулгасны дараа Найзууд → Найз нэмэх → Код оруулах.';
+  }
+</script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:darts/core/game/skill_rating.dart';
 import 'package:darts/core/online/online.dart';
 import 'package:darts/core/online/online.provider.dart';
@@ -8,6 +10,7 @@ import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/snackbar.dart';
 import 'package:darts/utils/text_styles.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -74,6 +77,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               _MyCard(me),
+              const SizedBox(height: 12),
+              const _AccountCard(),
               const SizedBox(height: 24),
               BText(
                 l10n.friendsLeaderboard.toUpperCase(),
@@ -160,6 +165,101 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       rating: p.rating(mode),
       highlight: isMe,
       onTap: () => context.push('/f/${p.code}'),
+    );
+  }
+}
+
+/// "Save your progress" with Apple (iOS) and Google buttons while the
+/// account is anonymous; a quiet "Signed in with …" line once linked.
+class _AccountCard extends ConsumerStatefulWidget {
+  const _AccountCard();
+
+  @override
+  ConsumerState<_AccountCard> createState() => _AccountCardState();
+}
+
+class _AccountCardState extends ConsumerState<_AccountCard> {
+  var _busy = false;
+
+  Future<void> _link(fb.AuthProvider provider) async {
+    final l10n = context.l10n;
+    final container = ProviderScope.containerOf(context, listen: false);
+    setState(() => _busy = true);
+    try {
+      final result = await linkAccount(container, provider);
+      if (mounted && result == LinkResult.switched) {
+        showSnackMsg(l10n.accountRestored, context, type: SnackType.success);
+      }
+    } on fb.FirebaseAuthException catch (e) {
+      // Closing the Apple or Google sheet isn't an error worth showing.
+      final cancelled = e.code.contains('cancel');
+      if (mounted && !cancelled) {
+        showSnackMsg(l10n.signInFailed, context, type: SnackType.error);
+      }
+    } catch (_) {
+      if (mounted) {
+        showSnackMsg(l10n.signInFailed, context, type: SnackType.error);
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    ref.watch(authUserProvider);
+    if (Online.isLinked) {
+      final provider = Online.linkedProvider == 'apple.com'
+          ? 'Apple'
+          : 'Google';
+      return Row(
+        spacing: 8,
+        children: [
+          HugeIcon(
+            icon: HugeIcons.strokeRoundedCheckmarkBadge01,
+            color: BColors().primary,
+            size: 16,
+          ),
+          BComment(
+            l10n.signedInWith(provider),
+            color: BColors().textSecondary,
+            size: .s,
+          ),
+        ],
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: BColors().lighter,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BColors().border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 8,
+        children: [
+          BText(l10n.saveProgressTitle, fontWeight: .w800),
+          BComment(
+            l10n.saveProgressHint,
+            color: BColors().textSecondary,
+            size: .s,
+          ),
+          const SizedBox(height: 2),
+          // Apple's rules want Sign in with Apple wherever Google is offered
+          // on iOS; Android only gets Google.
+          if (Platform.isIOS)
+            SecondaryButton(
+              label: l10n.signInApple,
+              onTap: _busy ? null : () => _link(fb.AppleAuthProvider()),
+            ),
+          SecondaryButton(
+            label: l10n.signInGoogle,
+            onTap: _busy ? null : () => _link(fb.GoogleAuthProvider()),
+          ),
+        ],
+      ),
     );
   }
 }

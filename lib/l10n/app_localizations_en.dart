@@ -525,4 +525,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get friendsLeaderboard => 'Friends leaderboard';
+
+  @override
+  String get saveProgressTitle => 'Save your progress';
+
+  @override
+  String get saveProgressHint =>
+      'Sign in so your rank, friends and games survive a new phone.';
+
+  @override
+  String get signInApple => 'Sign in with Apple';
+
+  @override
+  String get signInGoogle => 'Sign in with Google';
+
+  @override
+  String signedInWith(String provider) {
+    return 'Signed in with $provider';
+  }
+
+  @override
+  String get signInFailed => 'Couldn\'t sign in. Try again.';
+
+  @override
+  String get accountRestored => 'Welcome back! Your games are restored.';
+
+  @override
+  String get onlineAccount => 'Online account';
+
+  @override
+  String get deleteAccount => 'Delete online account';
+
+  @override
+  String get deleteAccountHint => 'Removes your profile, friends and backups';
+
+  @override
+  String get deleteAccountTitle => 'Delete your online account?';
+
+  @override
+  String get deleteAccountMessage =>
+      'Your profile, friends and backed-up games are removed for good. Games on this phone stay.';
+
+  @override
+  String get accountDeleted => 'Online account deleted';
 }

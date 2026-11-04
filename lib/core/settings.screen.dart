@@ -1,7 +1,10 @@
+import 'package:darts/core/online/online.dart';
+import 'package:darts/core/online/online.provider.dart';
 import 'package:darts/core/providers/settings/settings.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/colors.dart';
+import 'package:darts/utils/dialogs.dart';
 import 'package:darts/utils/interaction.dart';
 import 'package:darts/utils/snackbar.dart';
 import 'package:darts/utils/text_styles.dart';
@@ -31,6 +34,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  var _deleting = false;
+
+  Future<void> _deleteAccount() async {
+    final l10n = context.l10n;
+    final ok = await showConfirmDialog(
+      context,
+      title: l10n.deleteAccountTitle,
+      message: l10n.deleteAccountMessage,
+      confirmLabel: l10n.delete,
+      destructive: true,
+    );
+    if (!ok || !mounted) return;
+    final container = ProviderScope.containerOf(context, listen: false);
+    setState(() => _deleting = true);
+    try {
+      await deleteOnlineAccount(container);
+      if (mounted) {
+        showSnackMsg(l10n.accountDeleted, context, type: SnackType.success);
+      }
+    } catch (_) {
+      if (mounted) {
+        showSnackMsg(l10n.onlineError, context, type: SnackType.error);
+      }
+    } finally {
+      if (mounted) setState(() => _deleting = false);
+    }
   }
 
   void save() {
@@ -193,6 +224,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ],
                   ),
+
+                  // Online account: only once the phone has gone online.
+                  if (Online.available && Online.uid != null)
+                    _SettingsCard(
+                      icon: HugeIcons.strokeRoundedUserAccount,
+                      title: context.l10n.onlineAccount,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: BComment(
+                            context.l10n.deleteAccountHint,
+                            color: BColors().textSecondary,
+                            size: .s,
+                          ),
+                        ),
+                        SecondaryButton(
+                          label: context.l10n.deleteAccount,
+                          color: BColors().danger,
+                          onTap: _deleting ? null : _deleteAccount,
+                        ),
+                      ],
+                    ),
 
                   // Saves the name; the settings above apply immediately.
                   PrimaryButton(label: context.l10n.saveName, onTap: save),

@@ -213,5 +213,20 @@
   "cameraDenied": "Camera access is off. Allow it in Settings to scan.",
   "scanHint": "Point at a friend's DartScore QR code",
   "notDartScoreQr": "That isn't a DartScore QR code",
-  "friendsLeaderboard": "Friends leaderboard"
+  "friendsLeaderboard": "Friends leaderboard",
+
+  "saveProgressTitle": "Save your progress",
+  "saveProgressHint": "Sign in so your rank, friends and games survive a new phone.",
+  "signInApple": "Sign in with Apple",
+  "signInGoogle": "Sign in with Google",
+  "signedInWith": "Signed in with {provider}",
+  "@signedInWith": {"placeholders": {"provider": {"type": "String"}}},
+  "signInFailed": "Couldn't sign in. Try again.",
+  "accountRestored": "Welcome back! Your games are restored.",
+  "onlineAccount": "Online account",
+  "deleteAccount": "Delete online account",
+  "deleteAccountHint": "Removes your profile, friends and backups",
+  "deleteAccountTitle": "Delete your online account?",
+  "deleteAccountMessage": "Your profile, friends and backed-up games are removed for good. Games on this phone stay.",
+  "accountDeleted": "Online account deleted"
 }

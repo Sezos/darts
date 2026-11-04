@@ -8,6 +8,19 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>DartScore</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- Firebase Auth's web sign-in (Google) returns here: the
+				     iOS app ID with colons as dashes. -->
+				<string>app-1-392300985513-ios-7f3cef795b3bfbc2a33db8</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Scan a friend's QR code to add them.</string>
 	<key>CFBundleLocalizations</key>

@@ -14,6 +14,11 @@ import 'package:go_router/go_router.dart';
 
 final router = GoRouter(
   initialLocation: "/",
+  // Firebase Auth's Google sign-in returns through the app's URL scheme
+  // (`app-1-…://firebaseauth/link?…`). Flutter hands that link to the router
+  // too, but Firebase has already handled it: stay where we are.
+  onEnter: (context, current, next, router) =>
+      next.uri.host == 'firebaseauth' ? const Block.stop() : const Allow(),
   routes: [
     GoRoute(
       path: "/",

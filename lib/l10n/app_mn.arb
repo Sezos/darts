@@ -156,5 +156,19 @@
   "cameraDenied": "Камерын зөвшөөрөл хаалттай. Уншуулахын тулд Тохиргооноос зөвшөөрнө үү.",
   "scanHint": "Найзынхаа DartScore QR код руу чиглүүл",
   "notDartScoreQr": "Энэ DartScore-ын QR код биш байна",
-  "friendsLeaderboard": "Найзуудын зэрэглэл"
+  "friendsLeaderboard": "Найзуудын зэрэглэл",
+
+  "saveProgressTitle": "Ахицаа хадгал",
+  "saveProgressHint": "Шинэ утсанд шилжсэн ч зэрэглэл, найз, тоглолтууд чинь хадгалагдахын тулд нэвтэр.",
+  "signInApple": "Apple-ээр нэвтрэх",
+  "signInGoogle": "Google-ээр нэвтрэх",
+  "signedInWith": "{provider}-ээр нэвтэрсэн",
+  "signInFailed": "Нэвтэрч чадсангүй. Дахин оролдоно уу.",
+  "accountRestored": "Тавтай морил! Тоглолтууд чинь сэргээгдлээ.",
+  "onlineAccount": "Онлайн бүртгэл",
+  "deleteAccount": "Онлайн бүртгэл устгах",
+  "deleteAccountHint": "Профайл, найз, нөөцийг устгана",
+  "deleteAccountTitle": "Онлайн бүртгэлээ устгах уу?",
+  "deleteAccountMessage": "Таны профайл, найзууд, нөөцлөгдсөн тоглолтууд бүрмөсөн устна. Энэ утсан дээрх тоглолтууд үлдэнэ.",
+  "accountDeleted": "Онлайн бүртгэл устгагдлаа"
 }

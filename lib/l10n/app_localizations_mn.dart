@@ -522,4 +522,47 @@ class AppLocalizationsMn extends AppLocalizations {
 
   @override
   String get friendsLeaderboard => 'Найзуудын зэрэглэл';
+
+  @override
+  String get saveProgressTitle => 'Ахицаа хадгал';
+
+  @override
+  String get saveProgressHint =>
+      'Шинэ утсанд шилжсэн ч зэрэглэл, найз, тоглолтууд чинь хадгалагдахын тулд нэвтэр.';
+
+  @override
+  String get signInApple => 'Apple-ээр нэвтрэх';
+
+  @override
+  String get signInGoogle => 'Google-ээр нэвтрэх';
+
+  @override
+  String signedInWith(String provider) {
+    return '$provider-ээр нэвтэрсэн';
+  }
+
+  @override
+  String get signInFailed => 'Нэвтэрч чадсангүй. Дахин оролдоно уу.';
+
+  @override
+  String get accountRestored => 'Тавтай морил! Тоглолтууд чинь сэргээгдлээ.';
+
+  @override
+  String get onlineAccount => 'Онлайн бүртгэл';
+
+  @override
+  String get deleteAccount => 'Онлайн бүртгэл устгах';
+
+  @override
+  String get deleteAccountHint => 'Профайл, найз, нөөцийг устгана';
+
+  @override
+  String get deleteAccountTitle => 'Онлайн бүртгэлээ устгах уу?';
+
+  @override
+  String get deleteAccountMessage =>
+      'Таны профайл, найзууд, нөөцлөгдсөн тоглолтууд бүрмөсөн устна. Энэ утсан дээрх тоглолтууд үлдэнэ.';
+
+  @override
+  String get accountDeleted => 'Онлайн бүртгэл устгагдлаа';
 }
