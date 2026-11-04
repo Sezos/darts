@@ -1,11 +1,11 @@
-import 'dart:math';
-
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:darts/core/game/skill_rating.dart';
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 /// Online profiles and friends, on Firebase Auth and Firestore.
 ///
@@ -247,6 +247,23 @@ abstract final class Online {
   static Future<void> deleteAccount(AuthProvider? reauthWith) async {
     final user = _auth.currentUser;
     if (user == null) return;
+    // Apple requires apps to revoke Sign in with Apple when the account is
+    // deleted. That takes a fresh authorization code (single-use, valid for
+    // minutes), so sign in with Apple once more first; it also counts as the
+    // recent login deletion needs.
+    if (reauthWith is AppleAuthProvider) {
+      final cred = await user.reauthenticateWithProvider(reauthWith);
+      final code = cred.additionalUserInfo?.authorizationCode;
+      if (code != null) {
+        try {
+          await _auth.revokeTokenWithAuthorizationCode(code);
+        } on FirebaseAuthException catch (e) {
+          // Fails until the Apple key (OAuth code flow) is set up in the
+          // Firebase console; deleting the account matters more.
+          debugPrint('Online: Apple token revoke failed: ${e.code}');
+        }
+      }
+    }
     await _deleteData(user.uid);
     try {
       await user.delete();
