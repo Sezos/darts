@@ -12,7 +12,36 @@
           "package_name": "mn.badral.darts"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "392300985513-48murucqi2u9lvcruu1q38ism1clqbs6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "mn.badral.darts",
+            "certificate_hash": "accece41a3611022f0d06c24f315354f8370b0f9"
+          }
+        },
+        {
+          "client_id": "392300985513-8pbarl87kske4g7gf50lh374l4vse8rn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "mn.badral.darts",
+            "certificate_hash": "30f032a519d22167debf7acd16d1b8b9b99ccc8d"
+          }
+        },
+        {
+          "client_id": "392300985513-cb6il1n184dqsfsakb3i6arfe4a6j7m7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "mn.badral.darts",
+            "certificate_hash": "8e8d66aa2b5bc67a2fc375f873afeb6c7a96b130"
+          }
+        },
+        {
+          "client_id": "392300985513-t74tdm41unfmgcg539rbjfsuii32dcop.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCOW09d3UPUSwRsgVzF-svCzbcrfdbxtpc"
@@ -20,7 +49,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "392300985513-t74tdm41unfmgcg539rbjfsuii32dcop.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "392300985513-7i2nfpkjfn92d0moa5tdm8optl0ejspi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "mn.badral.darts"
+              }
+            }
+          ]
         }
       }
     }
