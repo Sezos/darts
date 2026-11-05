@@ -38,7 +38,7 @@ class _ScanScreenState extends State<ScanScreen> {
       if (code != null) {
         _handled = true;
         Analytics.qrScanned();
-        context.pushReplacement('/f/$code');
+        context.pushReplacement('/friends/f/$code');
         return;
       }
       // Say so once per foreign code, not on every camera frame.

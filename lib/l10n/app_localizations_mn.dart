@@ -27,6 +27,9 @@ class AppLocalizationsMn extends AppLocalizations {
   String get start => 'Эхлэх';
 
   @override
+  String get play => 'Тоглох';
+
+  @override
   String get history => 'Түүх';
 
   @override

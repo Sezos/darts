@@ -1,5 +1,6 @@
 import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
+import 'package:darts/core/tabs.dart';
 import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/cricket_strings.dart';
@@ -137,7 +138,7 @@ class HistoryScreen extends ConsumerWidget {
 
                 Expanded(
                   child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
+                    padding: AppTabs.listPadding(context),
                     itemCount: finished.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {

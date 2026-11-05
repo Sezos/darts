@@ -3,6 +3,7 @@ import 'package:darts/core/online/friends.screen.dart';
 import 'package:darts/core/online/online.dart';
 import 'package:darts/core/online/online.provider.dart';
 import 'package:darts/core/rank_widgets.dart';
+import 'package:darts/core/tabs.dart';
 import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/analytics.dart';
 import 'package:darts/utils/colors.dart';
@@ -96,6 +97,7 @@ class _FriendProfileScreenState extends ConsumerState<FriendProfileScreen> {
         ),
       ),
       body: SafeArea(
+        bottom: false,
         child: switch (profile) {
           null => OnlineMessage(text: l10n.onlineUnavailable),
           AsyncData(value: null) => OnlineMessage(text: l10n.codeNotFound),
@@ -129,7 +131,7 @@ class _FriendProfileScreenState extends ConsumerState<FriendProfileScreen> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 600),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: AppTabs.listPadding(context),
           children: [
             const SizedBox(height: 8),
             Center(child: Avatar(p.name, size: 72)),

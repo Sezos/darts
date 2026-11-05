@@ -4,6 +4,7 @@ import 'package:darts/core/game/skill_rating.dart';
 import 'package:darts/core/online/online.dart';
 import 'package:darts/core/online/online.provider.dart';
 import 'package:darts/core/rank_widgets.dart';
+import 'package:darts/core/tabs.dart';
 import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/analytics.dart';
 import 'package:darts/utils/colors.dart';
@@ -46,6 +47,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         ),
       ),
       body: SafeArea(
+        bottom: false,
         child: !Online.available
             ? OnlineMessage(text: l10n.onlineUnavailable)
             : switch (ref.watch(myProfileProvider)) {
@@ -74,7 +76,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             await ref.read(myProfileProvider.future);
           },
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: AppTabs.listPadding(context),
             children: [
               _MyCard(me),
               const SizedBox(height: 12),
@@ -164,7 +166,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       name: isMe ? '${p.name} (${context.l10n.you})' : p.name,
       rating: p.rating(mode),
       highlight: isMe,
-      onTap: () => context.push('/f/${p.code}'),
+      onTap: () => context.push('/friends/f/${p.code}'),
     );
   }
 }
@@ -443,7 +445,7 @@ Future<void> showAddFriendSheet(BuildContext context) {
               icon: HugeIcons.strokeRoundedQrCode,
               onTap: () {
                 ctx.pop();
-                context.push('/scan');
+                context.push('/friends/scan');
               },
             ),
             SecondaryButton(
@@ -471,7 +473,7 @@ Future<void> _showCodeSheet(BuildContext context) {
     }
     Analytics.friendCodeEntered();
     ctx.pop();
-    context.push('/f/$code');
+    context.push('/friends/f/$code');
   }
 
   return showMoonModalBottomSheet<void>(

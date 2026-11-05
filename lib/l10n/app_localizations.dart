@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'Start'**
   String get start;
 
+  /// No description provided for @play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get play;
+
   /// No description provided for @history.
   ///
   /// In en, this message translates to:

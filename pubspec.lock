@@ -241,6 +241,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  cupertino_native_better:
+    dependency: "direct main"
+    description:
+      name: cupertino_native_better
+      sha256: "9100027c075fe238ee2031a557577ede166a00b6b8ccca770110bcba2f9d32ee"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.9.1"
   dart_style:
     dependency: transitive
     description:

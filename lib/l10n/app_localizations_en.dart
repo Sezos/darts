@@ -27,6 +27,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get start => 'Start';
 
   @override
+  String get play => 'Play';
+
+  @override
   String get history => 'History';
 
   @override

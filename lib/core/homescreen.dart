@@ -90,37 +90,24 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                         horizontal: 20,
                         vertical: 8,
                       ),
-                      child: Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              BText(
-                                context.l10n.homeTitle,
-                                fontWeight: .w900,
-                                size: .xl,
-                                letterSpacing: 2.5,
-                              ),
-                              BComment(
-                                context.l10n.homeSubtitle,
-                                color: BColors().textSecondary,
-                                size: .s,
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          IconTile(
-                            icon: HugeIcons.strokeRoundedUserGroup,
-                            label: context.l10n.friends,
-                            onTap: () => context.push("/friends"),
-                          ),
-                          const SizedBox(width: 10),
-                          IconTile(
-                            icon: HugeIcons.strokeRoundedSettings01,
-                            label: context.l10n.settings,
-                            onTap: () => context.push("/settings"),
-                          ),
-                        ],
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            BText(
+                              context.l10n.homeTitle,
+                              fontWeight: .w900,
+                              size: .xl,
+                              letterSpacing: 2.5,
+                            ),
+                            BComment(
+                              context.l10n.homeSubtitle,
+                              color: BColors().textSecondary,
+                              size: .s,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -187,34 +174,15 @@ class _HomescreenState extends ConsumerState<Homescreen> {
                       const SizedBox(height: 12),
                     ],
 
-                    // CTA buttons
+                    // CTA
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        spacing: 12,
-                        children: [
-                          Expanded(
-                            child: PrimaryButton(
-                              label: ongoing != null
-                                  ? context.l10n.newGame
-                                  : context.l10n.start,
-                              icon: HugeIcons.strokeRoundedPlay,
-                              onTap: () => context.push("/players"),
-                            ),
-                          ),
-                          IconTile(
-                            icon: HugeIcons.strokeRoundedRanking,
-                            label: context.l10n.ranks,
-                            size: 52,
-                            onTap: () => context.push("/ranks"),
-                          ),
-                          IconTile(
-                            icon: HugeIcons.strokeRoundedClock04,
-                            label: context.l10n.history,
-                            size: 52,
-                            onTap: () => context.push("/history"),
-                          ),
-                        ],
+                      child: PrimaryButton(
+                        label: ongoing != null
+                            ? context.l10n.newGame
+                            : context.l10n.start,
+                        icon: HugeIcons.strokeRoundedPlay,
+                        onTap: () => context.push("/players"),
                       ),
                     ),
 

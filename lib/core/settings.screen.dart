@@ -2,6 +2,7 @@ import 'package:darts/core/online/online.dart';
 import 'package:darts/core/online/online.provider.dart';
 import 'package:darts/core/providers/settings/settings.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
+import 'package:darts/core/tabs.dart';
 import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/dialogs.dart';
@@ -10,7 +11,6 @@ import 'package:darts/utils/snackbar.dart';
 import 'package:darts/utils/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:moon_design/moon_design.dart';
 
@@ -72,7 +72,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
     ref.read(userProvider.notifier).updateUser(name: name);
     showSnackMsg(context.l10n.nameSaved, context, type: SnackType.success);
-    context.pop();
+    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -93,8 +93,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: AppTabs.listPadding(context),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
@@ -225,8 +226,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ],
                   ),
 
-                  // Online account: only once the phone has gone online.
-                  if (Online.available && Online.uid != null)
+                  // Online account: only once the phone has gone online. The
+                  // tab stays open, so follow sign-in from the Friends tab.
+                  if (Online.available &&
+                      ref.watch(authUserProvider).value != null)
                     _SettingsCard(
                       icon: HugeIcons.strokeRoundedUserAccount,
                       title: context.l10n.onlineAccount,

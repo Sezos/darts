@@ -3,6 +3,7 @@ import 'package:darts/core/providers/game/game.provider.dart';
 import 'package:darts/core/providers/players/players.provider.dart';
 import 'package:darts/core/providers/user/user.provider.dart';
 import 'package:darts/core/rank_widgets.dart';
+import 'package:darts/core/tabs.dart';
 import 'package:darts/l10n/l10n.dart';
 import 'package:darts/utils/colors.dart';
 import 'package:darts/utils/interaction.dart';
@@ -57,11 +58,12 @@ class _RanksScreenState extends ConsumerState<RanksScreen> {
         ),
       ),
       body: SafeArea(
+        bottom: false,
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: AppTabs.listPadding(context),
               children: [
                 SegmentedPicker(
                   options: {

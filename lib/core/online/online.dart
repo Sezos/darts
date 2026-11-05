@@ -75,7 +75,10 @@ abstract final class Online {
     try {
       await current.reload();
     } on FirebaseAuthException catch (e) {
-      if (!_goneAccountCodes.contains(e.code)) rethrow;
+      // The emulators answer a sign-in saved by a live build with an
+      // internal error; it's no use to them either.
+      final foreign = _useEmulators && e.code == 'internal-error';
+      if (!foreign && !_goneAccountCodes.contains(e.code)) rethrow;
       await _auth.signOut();
       return null;
     }
